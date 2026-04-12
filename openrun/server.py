@@ -2,6 +2,8 @@ import threading
 import inspect
 import uvicorn
 import secrets
+import time
+import socket
 import string
 from openrun.core.state import set_global_state, get_global_state
 from openrun.core.config import Config
@@ -66,18 +68,28 @@ def serve(fn, public=False, api_key=None, port=8000):
     thread = threading.Thread(target=run_server, daemon=True)
     thread.start()
 
+    def wait_for_server(port, timeout=10):
+        start = time.time()
+        while time.time() - start < timeout:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                if s.connect_ex(("localhost", port)) == 0:
+                    return True
+            time.sleep(0.2)
+        return False
+
+    if not wait_for_server(port):
+        print("❌ Server failed to start.")
+        return
+
     if public:
-        import time
-        time.sleep(1)
         start_tunnel(port)
     else:
         print(f"🌍 URL: http://localhost:{port}")
         
     print("📡 Endpoint: /v1/chat/completions")
     
-    print("\n📡 Example Request:\n")
-    print(f"""curl -X POST http://localhost:{port}/v1/chat/completions \\
--H "Authorization: Bearer {api_key}" \\
--H "Content-Type: application/json" \\
--d '{{"messages":[{{"role":"user","content":"Hello"}}]}}'
-""")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("🛑 OpenRun stopped")
