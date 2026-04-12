@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from api.schemas import ChatRequest
-from core.state import get_global_state
-from api.dependencies import verify_api_key
-from model.inference import generate_response, stream_response
+from openrun.api.schemas import ChatRequest
+from openrun.core.state import get_global_state
+from openrun.api.dependencies import verify_api_key
+from openrun.model.inference import generate_response, stream_response
 import time
 import uuid
 

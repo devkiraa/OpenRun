@@ -3,11 +3,11 @@ import inspect
 import uvicorn
 import secrets
 import string
-from core.state import set_global_state, get_global_state
-from core.config import Config
-from network.server import create_app
-from network.tunnel import start_tunnel
-from adapters.base import BaseAdapter
+from openrun.core.state import set_global_state, get_global_state
+from openrun.core.config import Config
+from openrun.network.server import create_app
+from openrun.network.tunnel import start_tunnel
+from openrun.adapters.base import BaseAdapter
 
 class InlineAdapter(BaseAdapter):
     def __init__(self, fn):

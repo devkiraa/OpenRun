@@ -1,4 +1,4 @@
-from core.state import get_global_state
+from openrun.core.state import get_global_state
 import json
 
 def stream_response(messages: list):

@@ -17,17 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-openrun = "cli.main:main"
+openrun = "openrun.cli.main:main"
 
 [tool.setuptools]
-packages = [
-  "cli",
-  "api",
-  "core",
-  "model",
-  "adapters",
-  "network",
-  "security",
-  "streaming",
-  "utils"
-]
+packages = ["openrun"]

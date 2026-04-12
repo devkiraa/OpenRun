@@ -1,4 +1,4 @@
-from adapters.base import BaseAdapter
+from openrun.adapters.base import BaseAdapter
 try:
     from transformers import pipeline
 except ImportError:

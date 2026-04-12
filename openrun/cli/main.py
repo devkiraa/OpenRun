@@ -1,6 +1,6 @@
 import argparse
 import sys
-from cli.serve import run_serve
+from openrun.cli.serve import run_serve
 
 def main():
     parser = argparse.ArgumentParser(description="OpenRun - Target any local AI model via an OpenAI-compatible API")

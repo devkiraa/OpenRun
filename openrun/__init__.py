@@ -1,5 +1,6 @@
 """OpenRun core package."""
 
-__version__ = "0.1.0"
-
 from .server import serve
+
+__version__ = "1.0.1"
+__all__ = ["serve"]

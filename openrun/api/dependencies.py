@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException, status
-from core.state import get_global_state
+from openrun.core.state import get_global_state
 
 async def verify_api_key(request: Request):
     state = get_global_state()

@@ -1,9 +1,9 @@
 import uvicorn
-from core.config import Config
-from core.state import set_global_state
-from network.server import create_app
-from network.tunnel import start_tunnel
-from model.loader import load_model
+from openrun.core.config import Config
+from openrun.core.state import set_global_state
+from openrun.network.server import create_app
+from openrun.network.tunnel import start_tunnel
+from openrun.model.loader import load_model
 
 def run_serve(args):
     print("--- OpenRun Serve ---")

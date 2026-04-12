@@ -2,7 +2,7 @@ import importlib.util
 import sys
 import os
 import inspect
-from adapters.base import BaseAdapter
+from openrun.adapters.base import BaseAdapter
 
 class CustomAdapter(BaseAdapter):
     def __init__(self, file_path: str):

@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from core.config import Config
+from openrun.core.config import Config
 
 class AppState:
     def __init__(self):
