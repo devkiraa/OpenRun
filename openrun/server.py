@@ -39,13 +39,25 @@ class InlineAdapter(BaseAdapter):
         for word in response.split():
             yield word + " "
 
-def serve(fn, public=False, api_key=None, port=8000):
+def get_free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
+
+def is_port_in_use(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('localhost', port)) == 0
+
+def serve(fn, public=False, api_key=None, port=None):
+    if port is None:
+        port = get_free_port()
+    elif is_port_in_use(port):
+        print(f"⚠️ Port {port} busy. Switching automatically...")
+        port = get_free_port()
+
     if api_key is None:
         api_key = "sk-or-" + secrets.token_hex(8)
         
-    print("🚀 OpenRun running")
-    print(f"🔐 API Key: {api_key}")
-    
     config = Config(
         model="inline-model",
         file=None,
@@ -81,12 +93,16 @@ def serve(fn, public=False, api_key=None, port=8000):
         print("❌ Server failed to start.")
         return
 
+    print("🚀 OpenRun running")
+    print(f"🔐 API Key: {api_key}")
+
     if public:
         start_tunnel(port)
     else:
         print(f"🌍 URL: http://localhost:{port}")
         
     print("📡 Endpoint: /v1/chat/completions")
+    print("❤️ Health: /health")
     
     try:
         while True:

@@ -10,11 +10,21 @@ class HuggingFaceAdapter(BaseAdapter):
         self.generator = None
 
     def load(self):
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        import torch
+
         print(f"Loading HuggingFace model '{self.model_name}'...")
-        self.generator = pipeline('text-generation', model=self.model_name, device_map="auto")
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.model_name,
+            device_map="auto",
+            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+        )
 
     def generate(self, input_data: list) -> str:
-        if not self.generator:
+        if not hasattr(self, "model") or not hasattr(self, "tokenizer"):
             raise RuntimeError("Model not loaded. Call load() first.")
         
         prompt = ""
@@ -23,17 +33,68 @@ class HuggingFaceAdapter(BaseAdapter):
                 prompt += f"<|{msg['role']}|>\n{msg['content']}\n"
         prompt += "<|assistant|>\n"
         
-        # Basic generation. Adjust max_new_tokens as needed.
-        result = self.generator(prompt, max_new_tokens=200, num_return_sequences=1)
-        generated_text = result[0]['generated_text']
+        inputs = self.tokenizer(prompt, return_tensors="pt")
+        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+        generation_kwargs = {
+            "max_new_tokens": 200,
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "do_sample": True
+        }
+
+        outputs = self.model.generate(
+            **inputs,
+            **generation_kwargs
+        )
+
+        generated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        if prompt in generated:
+            generated = generated.split(prompt, 1)[-1]
         
-        # Safely remove prompt if present
-        if prompt in generated_text:
-            generated_text = generated_text.split(prompt, 1)[-1].strip()
-        
-        return generated_text
+        return generated.strip()
 
     def stream(self, input_data: list):
-        response = self.generate(input_data)
-        for word in response.split():
-            yield word + " "
+        try:
+            from transformers import TextIteratorStreamer
+            import threading
+
+            prompt = ""
+            for msg in input_data:
+                prompt += f"<|{msg['role']}|>\n{msg['content']}\n"
+            prompt += "<|assistant|>\n"
+
+            streamer = TextIteratorStreamer(self.tokenizer, skip_special_tokens=True)
+
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+            inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+            generation_kwargs = {
+                "max_new_tokens": 200,
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "do_sample": True,
+                "streamer": streamer
+            }
+
+            thread = threading.Thread(
+                target=self.model.generate,
+                kwargs={
+                    **inputs,
+                    **generation_kwargs
+                }
+            )
+            thread.daemon = True
+            thread.start()
+
+            for token in streamer:
+                yield token
+
+        except Exception as e:
+            print(f"⚠️ Streaming failed, falling back: {e}")
+
+            # fallback to safe generation
+            response = self.generate(input_data)
+            for word in response.split():
+                yield word + " "
