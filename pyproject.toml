@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openrun"
+version = "0.1.0"
+description = "Turn any local AI model into an OpenAI-compatible API"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "transformers",
+    "torch",
+    "accelerate"
+]
+
+[project.scripts]
+openrun = "cli.main:main"
+
+[tool.setuptools]
+packages = [
+  "cli",
+  "api",
+  "core",
+  "model",
+  "adapters",
+  "network",
+  "security",
+  "streaming",
+  "utils"
+]
