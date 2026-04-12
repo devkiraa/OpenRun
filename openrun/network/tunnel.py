@@ -2,6 +2,36 @@ import subprocess
 import threading
 import shutil
 import re
+import platform
+
+def ensure_cloudflared():
+    if shutil.which("cloudflared"):
+        return "cloudflared"
+
+    system = platform.system().lower()
+
+    print("⚡ cloudflared not found. Installing automatically...")
+
+    if system == "linux":
+        subprocess.run(
+            "wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb",
+            shell=True
+        )
+        subprocess.run("dpkg -i cloudflared-linux-amd64.deb", shell=True)
+        return "cloudflared"
+
+    elif system == "darwin":
+        subprocess.run("brew install cloudflare/cloudflare/cloudflared", shell=True)
+        return "cloudflared"
+
+    elif system == "windows":
+        print("⚠️ Auto install not supported on Windows.")
+        print("👉 Run: winget install cloudflared")
+        return None
+
+    else:
+        print("⚠️ Unsupported OS for auto-install.")
+        return None
 
 def _monitor_tunnel(process):
     url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
@@ -20,13 +50,8 @@ def _monitor_tunnel(process):
         
 def start_tunnel(port: int):
     """Starts a Cloudflare tunnel in the background pointing to the local port."""
-    if not shutil.which("cloudflared"):
-        print("\n⚠️  Error: 'cloudflared' is not installed or not in PATH.")
-        print("To use --public, please install cloudflared:")
-        print("  - Mac: brew install cloudflare/cloudflare/cloudflared")
-        print("  - Linux: wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && dpkg -i cloudflared-linux-amd64.deb")
-        print("  - Windows: winget install cloudflared")
-        print("Or visit: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/\n")
+    binary = ensure_cloudflared()
+    if not binary:
         return
 
     print("🌐 Starting Cloudflare tunnel...")
@@ -34,7 +59,7 @@ def start_tunnel(port: int):
     try:
         # cloudflared logs everything to stderr, so we merge it into stdout
         process = subprocess.Popen(
-            ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
+            [binary, "tunnel", "--url", f"http://localhost:{port}"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

@@ -22,3 +22,6 @@ openrun = "openrun.cli.main:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["openrun*"]
+
+[tool.setuptools.package-data]
+openrun = ["openrun.txt"]

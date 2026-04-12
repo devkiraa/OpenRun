@@ -1,28 +1,29 @@
 import argparse
 import sys
+import os
 from openrun.cli.serve import run_serve
 from openrun import __version__
+
+def load_banner():
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    banner_path = os.path.join(base_dir, "openrun.txt")
+    
+    try:
+        with open(banner_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception:
+        return "OpenRun"
 
 def main():
     if len(sys.argv) == 1 or (
         len(sys.argv) > 1 and sys.argv[1] not in ["serve", "-v", "--version", "-h", "--help"]
     ):
-        print(f"""
-\033[96m
- ________  ________  _______   ________   ________  ___  ___  ________      
-|\   __  \|\   __  \|\  ___ \ |\   ___  \|\   __  \|\  \|\  \|\   ___  \    
-\ \  \|\  \ \  \|\  \ \   __/|\ \  \\ \  \ \  \|\  \ \  \\\  \ \  \\ \  \   
- \ \  \\\  \ \   ____\ \  \_|/_\ \  \\ \  \ \   _  _\ \  \\\  \ \  \\ \  \  
-  \ \  \\\  \ \  \___|\ \  \_|\ \ \  \\ \  \ \  \\  \\ \  \\\  \ \  \\ \  \ 
-   \ \_______\ \__\    \ \_______\ \__\\ \__\ \__\\ _\\ \_______\ \__\\ \__\
-    \|_______|\|__|     \|_______|\|__| \|__|\|__|\|__|\|_______|\|__| \|__|                                  
-\033[0m
+        banner = load_banner()
 
-\033[92m🚀 OpenRun\033[0m
-\033[90mTurn any Python AI model into an OpenAI API\033[0m
-
-👨‍💻 Developed by \033[93mdevkiraa\033[0m
-""")
+        print("\n\033[96m" + banner + "\033[0m")
+        print("\033[92m🚀 OpenRun\033[0m")
+        print("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
+        print("👨‍💻 Developed by \033[93mdevkiraa\033[0m\n")
         return
 
     parser = argparse.ArgumentParser(description="OpenRun - Target any local AI model via an OpenAI-compatible API")
