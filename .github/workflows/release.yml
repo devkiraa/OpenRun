@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build-and-publish:
     if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'Bump version')
@@ -57,6 +60,7 @@ jobs:
           git config user.email "actions@github.com"
           git add pyproject.toml
           git commit -m "🔖 Bump version"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git push
 
       - name: 🏗 Build package
