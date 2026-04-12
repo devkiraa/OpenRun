@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openrun-llm"
-version = "1.0.5"
+version = "1.0.6"
 description = "Turn any local AI model into an OpenAI-compatible API"
 requires-python = ">=3.9"
 dependencies = [
