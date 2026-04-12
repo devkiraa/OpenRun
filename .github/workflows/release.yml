@@ -1,0 +1,78 @@
+name: 🚀 Release OpenRun
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'Bump version')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install build twine
+
+      - name: ✅ Lint check
+        run: |
+          pip install flake8
+          flake8 .
+
+      - name: 🔢 Bump version
+        id: version_step
+        run: |
+          python - <<EOF >> $GITHUB_OUTPUT
+          import re
+          
+          file = "pyproject.toml"
+          content = open(file).read()
+          
+          match = re.search(r'version\s*=\s*"(\d+)\.(\d+)\.(\d+)"', content)
+          major, minor, patch = map(int, match.groups())
+          patch += 1
+          
+          new_version = f"{major}.{minor}.{patch}"
+          
+          new_content = re.sub(r'version\s*=\s*".*"', f'version = "{new_version}"', content)
+          open(file, "w").write(new_content)
+          
+          print("VERSION=" + new_version)
+          EOF
+
+      - name: 💾 Commit version bump
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add pyproject.toml
+          git commit -m "🔖 Bump version"
+          git push
+
+      - name: 🏗 Build package
+        run: python -m build
+
+      - name: 🚀 Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m twine upload dist/* || echo "Already uploaded"
+
+      - name: 🏷 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version_step.outputs.VERSION }}
+          name: Release v${{ steps.version_step.outputs.VERSION }}
+          draft: false
+          prerelease: false
