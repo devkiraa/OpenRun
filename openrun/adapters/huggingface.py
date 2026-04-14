@@ -15,7 +15,7 @@ class HuggingFaceAdapter(BaseAdapter):
         import warnings
         
         # Suppress verbose warnings related to torch_dtype payload
-        warnings.filterWarning(action='ignore', category=UserWarning)
+        warnings.filterwarnings(action='ignore', category=UserWarning)
 
         # print(f"Loading HuggingFace model '{self.model_name}'...")
 

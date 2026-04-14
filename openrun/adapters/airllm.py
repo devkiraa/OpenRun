@@ -7,11 +7,24 @@ class AirLLMAdapter(BaseAdapter):
         self.model_name = model_name
 
     def load(self):
+        import sys
+        if 'optimum.bettertransformer' not in sys.modules:
+            sys.modules['optimum.bettertransformer'] = type('dummy_optimum', (), {'BetterTransformer': None})()
+
         try:
             from airllm import AutoModel
         except ModuleNotFoundError:
             print("\033[93m[WARNING] Missing AirLLM/Optimum dependencies. Auto-installing now...\033[0m")
             subprocess.run([sys.executable, "-m", "pip", "install", "-q", "airllm", "optimum"], check=True)
+            
+            import importlib
+            import site
+            importlib.reload(site)
+            # Clear partially loaded modules from cache
+            for key in list(sys.modules.keys()):
+                if key.startswith("airllm") or key.startswith("optimum"):
+                    del sys.modules[key]
+                    
             from airllm import AutoModel
             
         print(f"\033[96m[INFO] Loading AirLLM model '{self.model_name}'...\033[0m")
