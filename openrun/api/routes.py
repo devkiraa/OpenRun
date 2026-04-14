@@ -29,6 +29,18 @@ async def chat_completions(request: ChatRequest):
     # Call inference layer
     response_text = generate_response(messages)
     
+    # Calculate token usage (exact if tokenizer available, else approximate)
+    prompt_tokens = 0
+    completion_tokens = 0
+    
+    if hasattr(state, "adapter") and hasattr(state.adapter, "tokenizer") and hasattr(state.adapter.tokenizer, "encode"):
+        prompt_tokens = sum(len(state.adapter.tokenizer.encode(m["content"])) for m in messages)
+        completion_tokens = len(state.adapter.tokenizer.encode(response_text))
+    else:
+        # 1 word ~ 1.3 tokens heuristic
+        prompt_tokens = int(sum(len(m["content"].split()) * 1.3 for m in messages))
+        completion_tokens = int(len(response_text.split()) * 1.3)
+        
     return {
         "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
         "object": "chat.completion",
@@ -45,8 +57,8 @@ async def chat_completions(request: ChatRequest):
             }
         ],
         "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "total_tokens": 0
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": prompt_tokens + completion_tokens
         }
     }
