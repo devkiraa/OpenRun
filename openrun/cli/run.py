@@ -24,14 +24,14 @@ def run_predefined(args):
     model_type = model_info.get("type", "unknown")
 
     if engine == "airllm":
-        print(f"🚀 Model: {model_key}")
-        print(f"🧠 Mode: {model_type} (AirLLM - slower but powerful)")
+        print(f"\033[96m➤\033[0m \033[1mModel :\033[0m {model_key}")
+        print(f"\033[96m➤\033[0m \033[1mEngine:\033[0m \033[93m{model_type} (AirLLM)\033[0m")
     else:
-        print(f"🚀 Model: {model_key}")
-        print(f"⚡ Mode: {model_type} (Transformers)")
+        print(f"\033[96m➤\033[0m \033[1mModel :\033[0m {model_key}")
+        print(f"\033[96m➤\033[0m \033[1mEngine:\033[0m \033[92m{model_type} (Transformers)\033[0m")
 
     if not os.getenv("HF_TOKEN"):
-        token = input("🔐 Enter HuggingFace token: ")
+        token = input("\033[93m🔐\033[0m Enter HuggingFace token: ")
         login(token)
 
     config = Config(
@@ -44,31 +44,36 @@ def run_predefined(args):
     set_global_state(config=config, model=None)
 
     # Auto fallback
+    print(f"\n\033[90m[1/3] Loading configuration...\033[0m")
     if engine == "transformers":
         try:
+            print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
             adapter = HuggingFaceAdapter(model)
             adapter.load()
         except RuntimeError:
-            print("⚠️ Switching to AirLLM due to memory limits...")
-            print("⚠️ Large model detected.")
-            print("⏳ Expect slower responses (10-60 seconds).")
+            print("\033[93m⚠️ Memory limited! Switching to AirLLM engine...\033[0m")
+            print("\033[93m⏳ Expect slower responses (10-60 seconds)\033[0m")
             adapter = AirLLMAdapter(model)
             adapter.load()
     else:
-        print("⚠️ Large model detected.")
-        print("⏳ Expect slower responses (10-60 seconds).")
+        print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
+        print("\033[93m⏳ Large model detected. Expect slower responses.\033[0m")
         adapter = AirLLMAdapter(model)
         adapter.load()
 
     state = get_global_state()
     state.adapter = adapter
-    print("Model loaded successfully.")
+    print("\033[92m✔ Model loaded successfully.\033[0m")
 
+    print(f"\n\033[90m[3/3] Booting API server on port {args.port}...\033[0m")
     if config.public:
-        time.sleep(2)
+        time.sleep(1)
         start_tunnel(config.port)
 
     # Start FastAPI server
     app = create_app()
-    print(f"Starting server on port {args.port}...")
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+    
+    print(f"\n\033[92m🚀 OpenRun is LIVE!\033[0m")
+    print(f"📡 \033[1mEndpoint:\033[0m http://localhost:{args.port}/v1/chat/completions")
+    
+    uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="warning")

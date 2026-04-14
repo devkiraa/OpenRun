@@ -12,8 +12,12 @@ class HuggingFaceAdapter(BaseAdapter):
     def load(self):
         from transformers import AutoModelForCausalLM, AutoTokenizer
         import torch
+        import warnings
+        
+        # Suppress verbose warnings related to torch_dtype payload
+        warnings.filterWarning(action='ignore', category=UserWarning)
 
-        print(f"Loading HuggingFace model '{self.model_name}'...")
+        # print(f"Loading HuggingFace model '{self.model_name}'...")
 
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -21,7 +25,7 @@ class HuggingFaceAdapter(BaseAdapter):
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
                 device_map="auto",
-                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
             )
         except RuntimeError as e:
             if "TORCH_LIBRARY" in str(e) or "triton" in str(e).lower():

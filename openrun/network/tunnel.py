@@ -15,13 +15,13 @@ def ensure_cloudflared():
     if system == "linux":
         subprocess.run(
             "wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb",
-            shell=True
+            shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
-        subprocess.run("dpkg -i cloudflared-linux-amd64.deb", shell=True)
+        subprocess.run("dpkg -i cloudflared-linux-amd64.deb", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return "cloudflared"
 
     elif system == "darwin":
-        subprocess.run("brew install cloudflare/cloudflare/cloudflared", shell=True)
+        subprocess.run("brew install cloudflare/cloudflare/cloudflared", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return "cloudflared"
 
     elif system == "windows":
@@ -40,7 +40,10 @@ def _monitor_tunnel(process):
     for line in process.stdout:
         match = url_pattern.search(line)
         if match and not found:
-            print(f"\n🌍 Public URL: {match.group(0)}\n")
+            url = match.group(0)
+            print("\n\033[92m" + "╭" + "─"*55 + "╮\033[0m")
+            print(f"\033[92m│\033[0m 🌍 \033[1mPublic URL:\033[0m \033[96m{url.ljust(39)}\033[0m \033[92m│\033[0m")
+            print("\033[92m" + "╰" + "─"*55 + "╯\033[0m\n")
             found = True
             # We found the URL, but we should continue reading the stream 
             # to prevent the pipe buffer from filling up and blocking the process.

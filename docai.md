@@ -82,11 +82,15 @@ stream(input_data: list) -> generator
 
 Built using FastAPI.
 
-### Main endpoint:
-
+### Endpoints:
 ```text
-POST /v1/chat/completions
+POST /v1/chat/completions  # Main OpenAI-compatible API
+GET  /                     # Root discovery and info
+GET  /health               # Health check ("status": "ok", "service": "OpenRun API")
 ```
+
+### Logging & Errors:
+If an error occurs (e.g., `404 Not Found`, `401 Unauthorized`), the OpenRun API server logs it clearly in the console with color-coded warnings, ensuring missing routes or invalid API Keys are easily debugged while keeping success (200) traffic completely silent.
 
 ---
 
@@ -158,7 +162,7 @@ Authorization: Bearer sk-or-xxxx
 
 ---
 
-## 🌍 7. Public Access (Cloudflare)
+## 🌍 7. Public Access & UI (Cloudflare)
 
 If enabled:
 
@@ -168,10 +172,10 @@ serve(fn=chat, public=True)
 
 OpenRun:
 
-1. Starts local server
-2. Starts Cloudflare tunnel
-3. Extracts public URL
-4. Prints usable endpoint
+1. Starts local server quietly.
+2. Starts Cloudflare tunnel (`subprocess` with verbose logs totally silenced via `DEVNULL`).
+3. Extracts public URL and draws a clean ASCII art box around the public endpoint and the requested `API_KEY` to guarantee a perfect Developer Experience (DX).
+4. Any missing Auth returns `401 Unauthorized`. Any missing route returns `404 Not Found` directly into the cleanly formatted console logs!
 
 ---
 

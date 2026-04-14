@@ -40,3 +40,5 @@ htmlcov/
 # Temp
 *.tmp
 *.bak
+
+colab_test_models.ipynb
