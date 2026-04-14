@@ -6,6 +6,6 @@ class Message(BaseModel):
     content: str
 
 class ChatRequest(BaseModel):
-    model: str
+    model: Optional[str] = "openrun"
     messages: List[Message]
     stream: Optional[bool] = False

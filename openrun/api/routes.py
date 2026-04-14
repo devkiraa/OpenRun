@@ -12,8 +12,9 @@ router = APIRouter()
 @router.post("/v1/chat/completions", dependencies=[Depends(verify_api_key)])
 async def chat_completions(request: ChatRequest):
     state = get_global_state()
-    model_name = state.config.model if state.config and state.config.model else request.model
-    model_name = model_name or "openrun"
+    
+    # Precedence: config.model > request.model > "openrun"
+    model_name = getattr(state.config, "model", None) or request.model or "openrun"
     
     # Extract messages directly
     messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]

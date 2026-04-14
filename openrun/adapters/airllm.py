@@ -9,7 +9,13 @@ class AirLLMAdapter(BaseAdapter):
     def load(self):
         import sys
         if 'optimum.bettertransformer' not in sys.modules:
-            sys.modules['optimum.bettertransformer'] = type('dummy_optimum', (), {'BetterTransformer': None})()
+            class DummyBetterTransformer:
+                @staticmethod
+                def transform(model):
+                    # Return the model unmodified since BetterTransformer was deprecated
+                    return model
+            
+            sys.modules['optimum.bettertransformer'] = type('dummy_optimum', (), {'BetterTransformer': DummyBetterTransformer})()
 
         try:
             from airllm import AutoModel
