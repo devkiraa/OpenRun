@@ -15,13 +15,22 @@ class HuggingFaceAdapter(BaseAdapter):
 
         print(f"Loading HuggingFace model '{self.model_name}'...")
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name,
-            device_map="auto",
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
-        )
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                device_map="auto",
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+            )
+        except RuntimeError as e:
+            if "TORCH_LIBRARY" in str(e) or "triton" in str(e).lower():
+                print("\n⚠️ PyTorch runtime conflict detected.")
+                print("This happens in Jupyter/Colab when re-running cells.\n")
+                print("👉 Fix: Restart your runtime and run again.")
+                print("(Runtime → Restart session)\n")
+            else:
+                raise
 
     def generate(self, input_data: list) -> str:
         if not hasattr(self, "model") or not hasattr(self, "tokenizer"):
@@ -43,17 +52,27 @@ class HuggingFaceAdapter(BaseAdapter):
             "do_sample": True
         }
 
-        outputs = self.model.generate(
-            **inputs,
-            **generation_kwargs
-        )
+        try:
+            outputs = self.model.generate(
+                **inputs,
+                **generation_kwargs
+            )
 
-        generated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            generated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        if prompt in generated:
-            generated = generated.split(prompt, 1)[-1]
-        
-        return generated.strip()
+            if prompt in generated:
+                generated = generated.split(prompt, 1)[-1]
+            
+            return generated.strip()
+        except RuntimeError as e:
+            if "TORCH_LIBRARY" in str(e) or "triton" in str(e).lower():
+                print("\n⚠️ PyTorch runtime conflict detected.")
+                print("This happens in Jupyter/Colab when re-running cells.\n")
+                print("👉 Fix: Restart your runtime and run again.")
+                print("(Runtime → Restart session)\n")
+                return "Error: PyTorch runtime conflict. Restart session."
+            else:
+                raise
 
     def stream(self, input_data: list):
         try:
@@ -91,6 +110,15 @@ class HuggingFaceAdapter(BaseAdapter):
             for token in streamer:
                 yield token
 
+        except RuntimeError as e:
+            if "TORCH_LIBRARY" in str(e) or "triton" in str(e).lower():
+                print("\n⚠️ PyTorch runtime conflict detected.")
+                print("This happens in Jupyter/Colab when re-running cells.\n")
+                print("👉 Fix: Restart your runtime and run again.")
+                print("(Runtime → Restart session)\n")
+                yield "Error: PyTorch runtime conflict. Restart session."
+            else:
+                raise
         except Exception as e:
             print(f"⚠️ Streaming failed, falling back: {e}")
 

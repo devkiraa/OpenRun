@@ -16,7 +16,7 @@ def load_banner():
 
 def main():
     if len(sys.argv) == 1 or (
-        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "-v", "--version", "-h", "--help"]
+        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "-v", "--version", "-h", "--help"]
     ):
         banner = load_banner()
 
@@ -38,6 +38,13 @@ def main():
     serve_parser.add_argument("--public", action="store_true", help="Expose server publicly via Cloudflare")
     serve_parser.add_argument("--api-key", type=str, help="Require API key for requests")
 
+    # Run command
+    run_parser = subparsers.add_parser("run", help="Run a predefined model")
+    run_parser.add_argument("model_name", type=str, help="Predefined model name to run")
+    run_parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
+    run_parser.add_argument("--public", action="store_true", help="Expose server publicly via Cloudflare")
+    run_parser.add_argument("--api-key", type=str, help="Require API key for requests")
+
     args = parser.parse_args()
 
     if args.version:
@@ -46,6 +53,9 @@ def main():
 
     if args.command == "serve":
         run_serve(args)
+    elif args.command == "run":
+        from openrun.cli.run import run_predefined
+        run_predefined(args)
     else:
         parser.print_help()
         sys.exit(1)
