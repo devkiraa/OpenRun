@@ -51,11 +51,21 @@ def main():
         print(f"\033[92mOpenRun v{__version__}\033[0m")
         return
 
+    import asyncio
+    
     if args.command == "serve":
-        run_serve(args)
+        try:
+            run_serve(args)
+        except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
+            print("\n\033[93m[INFO] OpenRun Server stopped.\033[0m")
+            sys.exit(0)
     elif args.command == "run":
         from openrun.cli.run import run_predefined
-        run_predefined(args)
+        try:
+            run_predefined(args)
+        except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
+            print("\n\033[93m[INFO] OpenRun Server stopped.\033[0m")
+            sys.exit(0)
     else:
         parser.print_help()
         sys.exit(1)

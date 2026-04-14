@@ -34,6 +34,7 @@ def ensure_cloudflared():
         return None
 
 def _monitor_tunnel(process):
+    from openrun.core.state import global_state
     url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
     found = False
     
@@ -41,9 +42,19 @@ def _monitor_tunnel(process):
         match = url_pattern.search(line)
         if match and not found:
             url = match.group(0)
-            print("\n\033[92m" + "╭" + "─"*55 + "╮\033[0m")
-            print(f"\033[92m│\033[0m 🌍 \033[1mPublic URL:\033[0m \033[96m{url.ljust(39)}\033[0m \033[92m│\033[0m")
-            print("\033[92m" + "╰" + "─"*55 + "╯\033[0m\n")
+            
+            box_width = max(55, len(url) + 16)
+            api_key = getattr(global_state.config, 'api_key', None) if global_state.config else None
+            
+            print("\n\033[92m" + "╭" + "─"*(box_width) + "╮\033[0m")
+            print(f"\033[92m│\033[0m 🌍 \033[1mPublic URL:\033[0m \033[96m{url.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
+            
+            if api_key:
+                print(f"\033[92m│\033[0m 🔑 \033[1mAPI Key:\033[0m    \033[93m{str(api_key).ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
+            else:
+                print(f"\033[92m│\033[0m 🔓 \033[1mAuth:\033[0m       \033[90m{'None (Open Access)'.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
+                
+            print("\033[92m" + "╰" + "─"*(box_width) + "╯\033[0m\n")
             found = True
             # We found the URL, but we should continue reading the stream 
             # to prevent the pipe buffer from filling up and blocking the process.
