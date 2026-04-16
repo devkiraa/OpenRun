@@ -1,7 +1,6 @@
 import argparse
 import sys
 import os
-from openrun.cli.serve import run_serve
 from openrun import __version__
 
 def load_banner():
@@ -21,7 +20,7 @@ def main():
         banner = load_banner()
 
         print("\n\033[96m" + banner + "\033[0m")
-        print("\033[92m🚀 OpenRun\033[0m")
+        print(f"\033[92m🚀 OpenRun v{__version__}\033[0m")
         print("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
         print("👨‍💻 Developed by \033[93mdevkiraa\033[0m\n")
         return
@@ -39,8 +38,8 @@ def main():
     serve_parser.add_argument("--api-key", type=str, help="Require API key for requests")
 
     # Run command
-    run_parser = subparsers.add_parser("run", help="Run a predefined model")
-    run_parser.add_argument("model_name", type=str, help="Predefined model name to run")
+    run_parser = subparsers.add_parser("run", help="Run a predefined model interactively or directly")
+    run_parser.add_argument("model_name", type=str, nargs="?", help="Predefined model name to run (optional, leave blank for interactive menu)")
     run_parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
     run_parser.add_argument("--public", action="store_true", help="Expose server publicly via Cloudflare")
     run_parser.add_argument("--api-key", type=str, help="Require API key for requests")
@@ -55,6 +54,7 @@ def main():
     
     if args.command == "serve":
         try:
+            from openrun.cli.serve import run_serve
             run_serve(args)
         except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
             print("\n\033[93m[INFO] OpenRun Server stopped.\033[0m")

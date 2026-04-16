@@ -13,7 +13,8 @@ dependencies = [
     "pydantic",
     "transformers",
     "torch",
-    "accelerate"
+    "accelerate",
+    "questionary"
 ]
 
 [project.scripts]
