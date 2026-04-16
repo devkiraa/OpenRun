@@ -18,51 +18,61 @@ PLAYGROUND_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenRun Web Playground</title>
+    <title>OpenRun Playground</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        .markdown-body pre { background-color: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-top: 0.5rem; margin-bottom: 0.5rem; font-family: monospace; }
-        .markdown-body code { background-color: rgba(27,31,35,0.05); border-radius: 3px; padding: 0.2em 0.4em; }
+        body { font-family: 'Inter', sans-serif; }
+        .bg-app { background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%); background-attachment: fixed; }
+        
+        .markdown-body pre { background-color: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 0.75rem; overflow-x: auto; margin: 1rem 0; box-shadow: inset 0 0 0 1px #334155; position: relative; }
+        .markdown-body code { background-color: rgba(255,255,255,0.08); border-radius: 0.25rem; padding: 0.2em 0.4em; }
         .markdown-body pre code { background-color: transparent; padding: 0; }
-        .message-content { white-space: pre-wrap; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; line-height: 1.5; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .message-content { white-space: pre-wrap; line-height: 1.6; }
+        
+        .copy-button { position: absolute; top: 0.5rem; right: 0.5rem; background: #334155; border: none; color: #cbd5e1; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; cursor: pointer; opacity: 0; transition: all 0.2s; }
+        .markdown-body pre:hover .copy-button { opacity: 1; }
+        .copy-button:hover { background: #475569; color: #fff; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
-        .recording span { animation-name: blink; animation-duration: 1.4s; animation-iteration-count: infinite; animation-fill-mode: both; font-size: 24px; line-height: 10px;}
-        .recording span:nth-child(2) { animation-delay: 0.2s; }
-        .recording span:nth-child(3) { animation-delay: 0.4s; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .typing-indicator { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 4px; }
+        .dot { width: 6px; height: 6px; background-color: #94a3b8; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 h-screen flex flex-col font-sans">
+<body class="bg-app text-gray-100 h-screen flex flex-col antialiased">
     
-    <!-- Top Bar -->
-    <header class="bg-gray-800 border-b border-gray-700 px-6 py-3 flex justify-between items-center shadow-sm z-10 flex-shrink-0">
+    <!-- Top Nav -->
+    <header class="bg-slate-900/60 backdrop-blur-md border-b border-slate-800 px-6 py-3.5 flex justify-between items-center shadow-sm z-20 flex-shrink-0 sticky top-0">
         <div class="flex items-center gap-3">
-            <div class="h-8 w-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+            <div class="h-9 w-9 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.522 4.477 10 10 10s10-4.478 10-10C22 6.477 17.522 2 12 2zm1.25 15.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zm-.8-2.6a1 1 0 01-1-.87L11.4 8h1.2l-.05 6.03a1 1 0 01-.1.37z" clip-rule="evenodd" />
                 </svg>
             </div>
             <div>
-                <h1 class="text-lg font-bold text-gray-50 tracking-wide">OpenRun <span class="text-cyan-400">Playground</span></h1>
-                <div class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
-                    <span class="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
-                    Connected: <span id="model-name-display" class="text-gray-300 font-mono text-[10px] bg-gray-700 px-1 py-0.5 rounded">Loading...</span>
+                <h1 class="text-lg font-bold text-white tracking-tight">OpenRun <span class="text-indigo-400 font-medium">Chat</span></h1>
+                <div class="text-[11px] text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"></span>
+                    Running: <span id="model-name-display" class="text-slate-300 font-mono">Loading...</span>
                 </div>
             </div>
         </div>
         
-        <div class="flex items-center gap-4 bg-gray-900/50 p-1.5 rounded-lg border border-gray-700/50">
-            <div class="flex flex-col items-end px-2">
-                <label for="api-key" class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">API Key (Optional)</label>
-                <input type="password" id="api-key" placeholder="sk-..." class="bg-gray-800 border hidden lg:block border-gray-700 text-gray-200 text-xs rounded px-2.5 py-1 focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 outline-none w-48 font-mono placeholder-gray-600 transition-all">
+        <div class="flex items-center gap-4 bg-slate-800/50 p-1.5 rounded-xl border border-slate-700/50 shadow-inner">
+            <div class="flex flex-col items-end px-3">
+                <input type="password" id="api-key" placeholder="API Key (Optional)..." class="bg-slate-900 border hidden sm:block border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none w-56 font-mono placeholder-slate-500 transition-all">
             </div>
             
-            <div class="h-6 w-px bg-gray-700 hidden sm:block"></div>
+            <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
             
-            <button id="clear-btn" class="text-gray-400 hover:text-red-400 transition-colors p-1.5 rounded hover:bg-gray-800" title="Clear Chat">
+            <button id="clear-btn" class="text-slate-400 hover:text-rose-400 transition-colors p-2 rounded-lg hover:bg-slate-800" title="Clear Chat">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -70,58 +80,60 @@ PLAYGROUND_HTML = """
         </div>
     </header>
 
-    <!-- Chat Container -->
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth pb-32">
-        <!-- Initial empty state -->
-        <div id="empty-state" class="h-full flex flex-col items-center justify-center text-gray-500 space-y-4 animate-fade-in relative z-0">
-            <div class="h-16 w-16 bg-gray-800 rounded-2xl flex items-center justify-center border border-gray-700 shadow-xl mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    <!-- Chat Area -->
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8 scroll-smooth pb-40">
+        <!-- Empty State -->
+        <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-500 space-y-6 animate-fade-in relative z-0">
+            <div class="h-20 w-20 bg-slate-800 rounded-[2rem] flex items-center justify-center border border-slate-700 shadow-2xl shadow-indigo-500/10 mb-2 rotate-3 hover:rotate-0 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
             </div>
-            <h2 class="text-xl font-medium text-gray-300">How can I help you today?</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full mt-8 opacity-70">
-                <button class="suggestion-btn text-left p-4 rounded-xl border border-gray-700 bg-gray-800/50 hover:bg-gray-800 transition-all hover:border-gray-600 group">
-                    <div class="font-medium text-gray-300 mb-1 group-hover:text-cyan-400 transition-colors">Write a Python script</div>
-                    <div class="text-sm text-gray-500">to scrape data from a website</div>
+            <h2 class="text-2xl font-semibold text-slate-200">How can I help you today?</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full mt-8">
+                <button class="suggestion-btn text-left p-5 rounded-2xl border border-slate-700/60 bg-slate-800/40 hover:bg-slate-800 hover:border-slate-600 transition-all group backdrop-blur-sm shadow-md">
+                    <div class="font-semibold text-slate-200 mb-1 group-hover:text-indigo-400 transition-colors">Write a Python script</div>
+                    <div class="text-sm text-slate-400">to scrape data from a website</div>
                 </button>
-                <button class="suggestion-btn text-left p-4 rounded-xl border border-gray-700 bg-gray-800/50 hover:bg-gray-800 transition-all hover:border-gray-600 group">
-                    <div class="font-medium text-gray-300 mb-1 group-hover:text-cyan-400 transition-colors">Explain quantum computing</div>
-                    <div class="text-sm text-gray-500">as if I am 5 years old</div>
+                <button class="suggestion-btn text-left p-5 rounded-2xl border border-slate-700/60 bg-slate-800/40 hover:bg-slate-800 hover:border-slate-600 transition-all group backdrop-blur-sm shadow-md">
+                    <div class="font-semibold text-slate-200 mb-1 group-hover:text-indigo-400 transition-colors">Explain quantum computing</div>
+                    <div class="text-sm text-slate-400">as if I am 5 years old</div>
                 </button>
             </div>
         </div>
     </main>
 
-    <!-- Bottom Input Area -->
-    <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-gray-900 via-gray-900 to-transparent pt-10 pb-6 px-4 sm:px-6">
-        <div class="max-w-4xl mx-auto relative">
-            <div id="error-toast" class="absolute -top-12 left-1/2 -translate-x-1/2 bg-red-500/90 text-white px-4 py-2 rounded-lg text-sm shadow-lg border border-red-400 opacity-0 transition-opacity pointer-events-none flex items-center gap-2 font-medium backdrop-blur-sm">
+    <!-- Input Footer -->
+    <div class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-slate-950 via-slate-900/90 to-transparent pt-12 pb-6 px-4 sm:px-6 pointer-events-none z-20">
+        <div class="max-w-4xl mx-auto relative pointer-events-auto">
+            
+            <div id="error-toast" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-rose-500/90 text-white px-5 py-2.5 rounded-xl text-sm shadow-xl shadow-rose-500/20 border border-rose-400 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 font-medium backdrop-blur-md translate-y-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                 </svg>
                 <span id="error-msg"></span>
             </div>
             
-            <!-- Stop Generation Button -->
-            <div class="flex justify-center w-full absolute -top-14 pointer-events-none">
-                <button id="stop-btn" class="hidden pointer-events-auto bg-gray-800 hover:bg-gray-700 border border-gray-600 text-gray-300 text-xs px-4 py-1.5 rounded-full shadow-lg transition-all items-center gap-2 backdrop-blur-sm shadow-black/50">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <!-- Stop Generating -->
+            <div class="flex justify-center w-full absolute -top-16 pointer-events-none">
+                <button id="stop-btn" class="hidden pointer-events-auto bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 text-xs font-semibold px-4 py-2 rounded-full shadow-lg transition-all items-center gap-2 backdrop-blur-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-rose-400" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
                     </svg>
                     Stop generating
                 </button>
             </div>
 
-            <div class="relative bg-gray-800 rounded-2xl border border-gray-700 shadow-2xl focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500 transition-all flex flex-col pb-12">
-                <textarea id="message-input" rows="1" class="w-full bg-transparent text-gray-100 placeholder-gray-500 px-4 py-4 rounded-2xl focus:outline-none resize-none max-h-48 overflow-y-auto leading-relaxed" placeholder="Message OpenRun..." autofocus></textarea>
+            <!-- Text Box -->
+            <div class="relative bg-slate-800/80 backdrop-blur-xl rounded-3xl border border-slate-700/80 shadow-2xl focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all flex flex-col pb-12">
+                <textarea id="message-input" rows="1" class="w-full bg-transparent text-slate-100 placeholder-slate-500 px-5 pt-5 pb-2 rounded-3xl focus:outline-none resize-none max-h-48 overflow-y-auto leading-relaxed text-[15px]" placeholder="Message OpenRun..." autofocus></textarea>
                 
-                <div class="absolute bottom-2.5 right-2 sm:right-3 flex items-center gap-1.5">
-                    <label class="flex items-center gap-1.5 px-2 py-1.5 text-xs text-gray-400 bg-gray-900/50 rounded pointer-events-auto hover:bg-gray-700 transition cursor-pointer border border-gray-700/50">
-                        <input type="checkbox" id="stream-toggle" class="rounded bg-gray-800 border-gray-600 text-cyan-500 focus:ring-offset-gray-900 focus:ring-cyan-600 cursor-pointer w-3 h-3" checked>
+                <div class="absolute bottom-3 right-3 flex items-center gap-2">
+                    <label class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-400 bg-slate-900/50 rounded-lg pointer-events-auto hover:bg-slate-700 transition cursor-pointer border border-slate-700/50">
+                        <input type="checkbox" id="stream-toggle" class="rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-offset-slate-900 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5" checked>
                         Stream
                     </label>
-                    <button id="send-btn" class="bg-white hover:bg-gray-200 text-gray-900 h-8 w-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 shadow-md shadow-white/10" disabled>
+                    <button id="send-btn" class="bg-indigo-500 hover:bg-indigo-400 text-white h-9 w-9 rounded-[10px] flex items-center justify-center transition-all disabled:opacity-40 disabled:hover:bg-indigo-500 disabled:cursor-not-allowed transform active:scale-95 shadow-md shadow-indigo-500/20" disabled>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
                         </svg>
@@ -129,8 +141,8 @@ PLAYGROUND_HTML = """
                 </div>
             </div>
             
-            <div class="text-center mt-2.5 text-[10px] text-gray-500">
-                OpenRun API Server • Local Execution
+            <div class="text-center mt-3 text-[11px] font-medium text-slate-500">
+                OpenRun LLM API Server · OpenAI Compatible Output
             </div>
         </div>
     </div>
@@ -138,7 +150,6 @@ PLAYGROUND_HTML = """
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        // Use relative path for all API calls to automatically support Cloudflare Tunnels and ngrok!
         const API_URL = '/v1/chat/completions';
         const HEALTH_URL = '/';
         
@@ -158,7 +169,6 @@ PLAYGROUND_HTML = """
         const errorMsg = document.getElementById('error-msg');
         const modelNameDisplay = document.getElementById('model-name-display');
 
-        // Fetch global state to get model name
         async function fetchHealth() {
             try {
                 const res = await fetch(HEALTH_URL);
@@ -168,22 +178,25 @@ PLAYGROUND_HTML = """
                 }
             } catch (e) {
                 modelNameDisplay.textContent = "Offline";
-                modelNameDisplay.classList.add("text-red-400");
-                modelNameDisplay.parentElement.querySelector('span').classList.replace("bg-green-500", "bg-red-500");
+                modelNameDisplay.classList.add("text-rose-400");
+                modelNameDisplay.parentElement.querySelector('span').classList.replace("bg-emerald-400", "bg-rose-500");
             }
         }
         fetchHealth();
 
-        // Configure marked.js to use Tailwind typography styling basically
-        marked.setOptions({
-            breaks: true,
-            gfm: true
-        });
+        marked.setOptions({ breaks: true, gfm: true });
 
-        // Setup suggestion buttons
+        // Syntax highlighting injector for copy buttons
+        const renderCode = (code, language) => {
+            return `<pre><button class="copy-button" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('code').innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+        };
+        const renderer = new marked.Renderer();
+        renderer.code = renderCode;
+        marked.use({ renderer });
+
         document.querySelectorAll('.suggestion-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const text = btn.querySelector('.font-medium').textContent + ' ' + btn.querySelector('.text-sm').textContent;
+                const text = btn.querySelector('.font-semibold').textContent + ' ' + btn.querySelector('.text-sm').textContent;
                 messageInput.value = text;
                 messageInput.focus();
                 adjustTextareaHeight();
@@ -215,16 +228,11 @@ PLAYGROUND_HTML = """
                 abortController.abort();
                 isGenerating = false;
                 setUIGenerationState(false);
-                
-                // Add aborted message
                 const lastMsg = chatContainer.lastElementChild;
                 if (lastMsg && lastMsg.dataset.role === 'assistant') {
                     const contentDiv = lastMsg.querySelector('.message-content');
-                    if (contentDiv.querySelector('.recording')) {
-                         contentDiv.querySelector('.recording').remove();
-                    }
-                    if (contentDiv.innerHTML.trim() === '') {
-                        contentDiv.innerHTML = '<em class="text-gray-500">Generation stopped.</em>';
+                    if (contentDiv.querySelector('.typing-indicator')) {
+                         contentDiv.querySelector('.typing-indicator').remove();
                     }
                 }
             }
@@ -233,24 +241,14 @@ PLAYGROUND_HTML = """
         clearBtn.addEventListener('click', () => {
             if (isGenerating) return;
             messages = [];
-            
-            // Remove all chat messages
-            const children = Array.from(chatContainer.children);
-            children.forEach(child => {
-                if (child.id !== 'empty-state') {
-                    child.remove();
-                }
-            });
-            
+            Array.from(chatContainer.children).forEach(child => { if (child.id !== 'empty-state') child.remove(); });
             emptyState.style.display = 'flex';
         });
 
         function showError(msg) {
             errorMsg.textContent = msg;
-            errorToast.classList.remove('opacity-0');
-            setTimeout(() => {
-                errorToast.classList.add('opacity-0');
-            }, 5000);
+            errorToast.classList.remove('opacity-0', 'translate-y-2');
+            setTimeout(() => { errorToast.classList.add('opacity-0', 'translate-y-2'); }, 4000);
         }
         
         function setUIGenerationState(generating) {
@@ -260,14 +258,9 @@ PLAYGROUND_HTML = """
             
             if (generating) {
                 stopBtn.classList.remove('hidden');
-                setTimeout(() => stopBtn.classList.remove('opacity-0'), 10);
-                
-                // Replace send button icon with a spinner
-                sendBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                sendBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
             } else {
                 stopBtn.classList.add('hidden');
-                
-                // Restore send button icon
                 sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg>`;
                 messageInput.focus();
             }
@@ -275,42 +268,41 @@ PLAYGROUND_HTML = """
 
         function createMessageElement(role, content) {
             const div = document.createElement('div');
-            div.className = `flex gap-4 max-w-4xl mx-auto w-full group animate-fade-in px-4 py-2 rounded-xl border border-transparent hover:bg-gray-800/30 transition-colors ${role === 'user' ? '' : 'bg-gray-800/20'}`;
+            // Stylized bubbles handling
+            const isUser = role === 'user';
+            div.className = `flex gap-4 max-w-4xl mx-auto w-full group animate-fade-in ${isUser ? 'flex-row-reverse' : ''}`;
             div.dataset.role = role;
             
             const avatar = document.createElement('div');
-            avatar.className = `w-8 h-8 flex-shrink-0 rounded flex items-center justify-center text-white text-xs font-bold shadow-sm ${role === 'user' ? 'bg-indigo-500' : 'bg-gradient-to-br from-emerald-400 to-cyan-500'}`;
+            avatar.className = `w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-white text-xs shadow-md mt-1 ${isUser ? 'bg-indigo-500 ring-2 ring-indigo-500/20' : 'bg-slate-800 border border-slate-600'}`;
             
-            if (role === 'user') {
+            if (isUser) {
                 avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
             } else {
-                avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>`;
+                avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.522 4.477 10 10 10s10-4.478 10-10C22 6.477 17.522 2 12 2zm1.25 15.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zm-.8-2.6a1 1 0 01-1-.87L11.4 8h1.2l-.05 6.03a1 1 0 01-.1.37z" clip-rule="evenodd" /></svg>`;
             }
             
             const contentContainer = document.createElement('div');
-            contentContainer.className = 'flex-1 min-w-0 pt-1 pb-2';
+            // Bubble wrapping
+            contentContainer.className = `flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`;
             
-            const nameDiv = document.createElement('div');
-            nameDiv.className = 'font-semibold text-xs text-gray-400 mb-1 tracking-wide uppercase flex items-center gap-2';
-            if (role === 'user') {
-                nameDiv.textContent = 'You';
-            } else {
-                nameDiv.innerHTML = `Model <span class="bg-gray-700 px-1.5 py-px rounded text-[9px] text-gray-300 normal-case tracking-normal">${modelNameDisplay.textContent}</span>`;
-            }
+            const textBubble = document.createElement('div');
+            textBubble.className = `px-5 py-3.5 rounded-3xl ${isUser ? 'bg-indigo-500 text-white rounded-br-sm shadow-indigo-500/10' : 'bg-slate-800 border border-slate-700/60 rounded-bl-sm shadow-sm'}`;
             
             const textDiv = document.createElement('div');
-            textDiv.className = 'message-content markdown-body text-[15px]';
+            textDiv.className = `message-content markdown-body text-[15px] ${isUser ? '!text-white' : 'text-slate-200'}`;
             
-            if (role === 'user') {
-                textDiv.textContent = content; // Safe against XSS for user input
+            if (isUser) {
+                textDiv.textContent = content;
             } else if (content === '') {
-                textDiv.innerHTML = '<span class="recording font-bold text-gray-500 tracking-widest text-lg h-5 inline-block"><span>.</span><span>.</span><span>.</span></span>';
+                textDiv.innerHTML = '<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
             } else {
                 textDiv.innerHTML = marked.parse(content);
             }
             
-            contentContainer.appendChild(nameDiv);
-            contentContainer.appendChild(textDiv);
+            textBubble.appendChild(textDiv);
+            contentContainer.appendChild(textBubble);
+            
             div.appendChild(avatar);
             div.appendChild(contentContainer);
             
@@ -321,33 +313,22 @@ PLAYGROUND_HTML = """
             const text = messageInput.value.trim();
             if (!text) return;
             
-            // UI Updates
             messageInput.value = '';
             adjustTextareaHeight();
             emptyState.style.display = 'none';
             setUIGenerationState(true);
             
-            // Add user message to UI
             const { element: userElement } = createMessageElement('user', text);
             chatContainer.appendChild(userElement);
-            
-            // Add to message history
             messages.push({ role: 'user', content: text });
             
-            // Prepare assistant response element
             const { element: botElement, textDiv: botTextDiv } = createMessageElement('assistant', '');
             chatContainer.appendChild(botElement);
             
-            // Scroll to bottom
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: 'smooth'
-            });
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             
-            // Setup fetch
             const isStreaming = streamToggle.checked;
             abortController = new AbortController();
-            
             const apiKey = apiKeyInput.value.trim();
             const headers = {
                 'Content-Type': 'application/json',
@@ -358,28 +339,20 @@ PLAYGROUND_HTML = """
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers,
-                    body: JSON.stringify({
-                        messages: messages,
-                        stream: isStreaming
-                    }),
+                    body: JSON.stringify({ messages, stream: isStreaming }),
                     signal: abortController.signal
                 });
                 
                 if (!response.ok) {
-                    let errMsg = `Error ${response.status}`;
-                    try {
-                        const errJson = await response.json();
-                        errMsg = errJson.detail || errMsg;
-                    } catch(e) {}
-                    
-                    botTextDiv.innerHTML = `<span class="text-red-400 font-medium">${errMsg}</span>`;
-                    messages.pop(); // Remove user message from history on error
+                    let errMsg = `HTTP ${response.status}`;
+                    try { errMsg = (await response.json()).detail || errMsg; } catch(e) {}
+                    botTextDiv.innerHTML = `<span class="text-rose-400 font-medium">Error: ${errMsg}</span>`;
+                    messages.pop();
                     setUIGenerationState(false);
                     showError(errMsg);
                     return;
                 }
                 
-                // Remove the recording animation
                 botTextDiv.innerHTML = '';
                 let fullResponseText = "";
                 
@@ -398,18 +371,10 @@ PLAYGROUND_HTML = """
                             if (line.startsWith('data: ') && line !== 'data: [DONE]') {
                                 try {
                                     const data = JSON.parse(line.slice(6));
-                                    const delta = data.choices[0]?.delta?.content || '';
-                                    fullResponseText += delta;
+                                    fullResponseText += data.choices[0]?.delta?.content || '';
                                     botTextDiv.innerHTML = marked.parse(fullResponseText);
-                                    
-                                    // Keep trailing space scrolled
-                                    window.scrollTo({
-                                        top: document.body.scrollHeight,
-                                        behavior: 'auto'
-                                    });
-                                } catch (e) {
-                                    // Parse error on incomplete chunk
-                                }
+                                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
+                                } catch (e) {}
                             }
                         }
                     }
@@ -418,29 +383,18 @@ PLAYGROUND_HTML = """
                     fullResponseText = data.choices[0]?.message?.content || '';
                     botTextDiv.innerHTML = marked.parse(fullResponseText);
                 }
-                
-                // Add to history
                 messages.push({ role: 'assistant', content: fullResponseText });
                 
             } catch (err) {
-                if (err.name === 'AbortError') {
-                    // Handled entirely by the stop button click
-                } else {
-                    botTextDiv.innerHTML = `<span class="text-red-400 font-medium">Failed to connect to the OpenRun Server.</span>`;
+                if (err.name !== 'AbortError') {
+                    botTextDiv.innerHTML = `<span class="text-rose-400 font-medium">Failed to connect.</span>`;
                     showError("Connection failed");
                     messages.pop(); 
                 }
             } finally {
-                if (isGenerating) {
-                    setUIGenerationState(false);
-                }
+                if (isGenerating) setUIGenerationState(false);
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }
-            
-            // Final scroll
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: 'smooth'
-            });
         }
     </script>
 </body>

@@ -199,7 +199,8 @@ def run_predefined(args):
             pass
 
         if not token:
-            token = questionary.password("🔐 Enter HuggingFace token:").ask()
+            import getpass
+            token = getpass.getpass("\033[93m🔐\033[0m Enter HuggingFace token: ")
             
         if token:
             login(token)
@@ -283,4 +284,13 @@ def run_predefined(args):
     print(f"\n\033[92m🚀 OpenRun is LIVE!\033[0m")
     print(f"📡 \033[1mEndpoint:\033[0m http://localhost:{args.port}/v1/chat/completions")
     
-    uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="warning")
+    try:
+        import uvicorn
+        uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="warning")
+    except KeyboardInterrupt:
+        print("\n\033[93m[INFO] Shutting down OpenRun server cleanly...\033[0m")
+    except BaseException as e:
+        if e.__class__.__name__ in ("CancelledError", "KeyboardInterrupt"):
+            print("\n\033[93m[INFO] Shutting down OpenRun server cleanly...\033[0m")
+        else:
+            raise

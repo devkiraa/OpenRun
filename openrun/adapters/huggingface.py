@@ -40,13 +40,19 @@ class HuggingFaceAdapter(BaseAdapter):
         if not hasattr(self, "model") or not hasattr(self, "tokenizer"):
             raise RuntimeError("Model not loaded. Call load() first.")
         
-        prompt = ""
-        if input_data:
-            for msg in input_data:
-                prompt += f"<|{msg['role']}|>\n{msg['content']}\n"
-        prompt += "<|assistant|>\n"
+        if hasattr(self.tokenizer, "apply_chat_template"):
+            prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+            prompt_length = inputs["input_ids"].shape[1]
+        else:
+            prompt = ""
+            if input_data:
+                for msg in input_data:
+                    prompt += f"<|{msg['role']}|>\\n{msg['content']}\\n"
+            prompt += "<|assistant|>\\n"
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+            prompt_length = inputs["input_ids"].shape[1]
         
-        inputs = self.tokenizer(prompt, return_tensors="pt")
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
         generation_kwargs = {
@@ -62,10 +68,9 @@ class HuggingFaceAdapter(BaseAdapter):
                 **generation_kwargs
             )
 
-            generated = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-            if prompt in generated:
-                generated = generated.split(prompt, 1)[-1]
+            # slice the output to skip the prompt
+            outputs = outputs[0][prompt_length:]
+            generated = self.tokenizer.decode(outputs, skip_special_tokens=True)
             
             return generated.strip()
         except RuntimeError as e:
@@ -83,12 +88,15 @@ class HuggingFaceAdapter(BaseAdapter):
             from transformers import TextIteratorStreamer
             import threading
 
-            prompt = ""
-            for msg in input_data:
-                prompt += f"<|{msg['role']}|>\n{msg['content']}\n"
-            prompt += "<|assistant|>\n"
+            if hasattr(self.tokenizer, "apply_chat_template"):
+                prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
+            else:
+                prompt = ""
+                for msg in input_data:
+                    prompt += f"<|{msg['role']}|>\\n{msg['content']}\\n"
+                prompt += "<|assistant|>\\n"
 
-            streamer = TextIteratorStreamer(self.tokenizer, skip_special_tokens=True)
+            streamer = TextIteratorStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
 
             inputs = self.tokenizer(prompt, return_tensors="pt")
             inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
