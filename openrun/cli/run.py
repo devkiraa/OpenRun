@@ -6,80 +6,142 @@ from openrun.models.registry import PREDEFINED_MODELS
 
 def run_predefined(args):
     if not args.model_name:
+        is_colab = False
+        try:
+            import google.colab
+            is_colab = True
+        except ImportError:
+            pass
+
         model_keys = list(PREDEFINED_MODELS.keys())
         
-        choices = []
-        
-        # Add column headers as an unselectable separator
-        header = f"{'Model Name'.ljust(14)} │ {'Size'.rjust(4)} │ Ctx: {'Limit'.rjust(5)} │ {'Tokens/sec'.rjust(11)} │ Engine"
-        choices.append(questionary.Separator(header))
-        
-        for key in model_keys:
-            info = PREDEFINED_MODELS[key]
-            engine = info.get("engine", "transformers")
-            size = info.get("size", "N/A")
-            ctx = info.get("context", "N/A")
-            speed = info.get("speed", "N/A")
+        if is_colab:
+            print("\n\033[1mSelect a model to run:\033[0m")
+            header = f"\033[4m{'Model Name'.ljust(14)} │ {'Size'.rjust(4)} │ Ctx: {'Limit'.rjust(5)} │ {'Tokens/sec'.rjust(11)} │ Engine\033[0m"
+            print(f"      {header}")
             
-            # Format columns beautifully
-            f_name = key.ljust(14)
-            f_size = size.rjust(4)
-            f_ctx = ctx.rjust(5)
-            f_speed = speed.rjust(11)
-            f_engine = f"[{engine}]"
+            for i, key in enumerate(model_keys, 1):
+                info = PREDEFINED_MODELS[key]
+                engine = info.get("engine", "transformers")
+                size = info.get("size", "N/A")
+                ctx = info.get("context", "N/A")
+                speed = info.get("speed", "N/A")
+                f_name = key.ljust(14)
+                f_size = size.rjust(4)
+                f_ctx = ctx.rjust(5)
+                f_speed = speed.rjust(11)
+                f_engine = f"[{engine}]"
+                print(f"  \033[96m[{i}]\033[0m {f_name} │ {f_size} │ Ctx: {f_ctx} │ {f_speed} │ {f_engine}")
             
-            display_title = f"{f_name} │ {f_size} │ Ctx: {f_ctx} │ {f_speed} │ {f_engine}"
-            choices.append(questionary.Choice(display_title, value=key))
+            while True:
+                try:
+                    choice = input("\n\033[93m❯\033[0m Select number or model name: ").strip().lower()
+                    if not choice:
+                        continue
+                    if choice.isdigit() and 1 <= int(choice) <= len(model_keys):
+                        args.model_name = model_keys[int(choice) - 1]
+                        break
+                    elif choice in PREDEFINED_MODELS:
+                        args.model_name = choice
+                        break
+                    else:
+                        print("\033[91m❌ Invalid selection. Try again.\033[0m")
+                except EOFError:
+                    print("\n\033[93m[INFO] Exiting interactive menu.\033[0m")
+                    return
             
-        try:
-            selected_model = questionary.select(
-                "Select a model to run:",
-                choices=choices,
-                instruction="(Use arrow keys)",
-                pointer="❯",
-                style=questionary.Style([
-                    ('qmark', 'fg:yellow bold'),
-                    ('question', 'bold'),
-                    ('answer', 'fg:cyan bold'),
-                    ('pointer', 'fg:yellow bold'),
-                    ('highlighted', 'fg:cyan bold'),
-                    ('selected', 'fg:cyan'),
-                ])
-            ).ask()
+            while True:
+                try:
+                    print("\n\033[1mChoose execution mode:\033[0m")
+                    print("  \033[96m[1]\033[0m 🌐 Run API Server (OpenAI Compatible)")
+                    print("  \033[96m[2]\033[0m 💬 Local Chat (Interactive Terminal)")
+                    choice = input("\n\033[93m❯\033[0m Select number [1-2]: ").strip()
+                    if not choice:
+                        continue
+                    if choice == "1":
+                        args.run_mode = "api"
+                        break
+                    elif choice == "2":
+                        args.run_mode = "chat"
+                        break
+                    else:
+                        print("\033[91m❌ Invalid selection. Try again.\033[0m")
+                except EOFError:
+                    print("\n\033[93m[INFO] Exiting interactive menu.\033[0m")
+                    return
+        else:
+            choices = []
             
-            if not selected_model:
-                print("\n\033[93m[INFO] Exiting interactive menu.\033[0m")
-                return
+            # Add column headers as an unselectable separator
+            header = f"{'Model Name'.ljust(14)} │ {'Size'.rjust(4)} │ Ctx: {'Limit'.rjust(5)} │ {'Tokens/sec'.rjust(11)} │ Engine"
+            choices.append(questionary.Separator(header))
+            
+            for key in model_keys:
+                info = PREDEFINED_MODELS[key]
+                engine = info.get("engine", "transformers")
+                size = info.get("size", "N/A")
+                ctx = info.get("context", "N/A")
+                speed = info.get("speed", "N/A")
                 
-            args.model_name = selected_model
-            
-            # Step 2: Select Mode
-            mode_choice = questionary.select(
-                "Choose execution mode:",
-                choices=[
-                    questionary.Choice("🌐 Run API Server (OpenAI Compatible)", value="api"),
-                    questionary.Choice("💬 Local Chat (Interactive Terminal)", value="chat")
-                ],
-                instruction="(Use arrow keys)",
-                pointer="❯",
-                style=questionary.Style([
-                    ('qmark', 'fg:yellow bold'),
-                    ('question', 'bold'),
-                    ('answer', 'fg:cyan bold'),
-                    ('pointer', 'fg:yellow bold'),
-                    ('highlighted', 'fg:cyan bold'),
-                    ('selected', 'fg:cyan'),
-                ])
-            ).ask()
-            
-            if not mode_choice:
+                # Format columns beautifully
+                f_name = key.ljust(14)
+                f_size = size.rjust(4)
+                f_ctx = ctx.rjust(5)
+                f_speed = speed.rjust(11)
+                f_engine = f"[{engine}]"
+                
+                display_title = f"{f_name} │ {f_size} │ Ctx: {f_ctx} │ {f_speed} │ {f_engine}"
+                choices.append(questionary.Choice(display_title, value=key))
+                
+            try:
+                selected_model = questionary.select(
+                    "Select a model to run:",
+                    choices=choices,
+                    instruction="(Use arrow keys)",
+                    pointer="❯",
+                    style=questionary.Style([
+                        ('qmark', 'fg:yellow bold'),
+                        ('question', 'bold'),
+                        ('answer', 'fg:cyan bold'),
+                        ('pointer', 'fg:yellow bold'),
+                        ('highlighted', 'fg:cyan bold'),
+                        ('selected', 'fg:cyan'),
+                    ])
+                ).ask()
+                
+                if not selected_model:
+                    print("\n\033[93m[INFO] Exiting interactive menu.\033[0m")
+                    return
+                    
+                args.model_name = selected_model
+                
+                # Step 2: Select Mode
+                mode_choice = questionary.select(
+                    "Choose execution mode:",
+                    choices=[
+                        questionary.Choice("🌐 Run API Server (OpenAI Compatible)", value="api"),
+                        questionary.Choice("💬 Local Chat (Interactive Terminal)", value="chat")
+                    ],
+                    instruction="(Use arrow keys)",
+                    pointer="❯",
+                    style=questionary.Style([
+                        ('qmark', 'fg:yellow bold'),
+                        ('question', 'bold'),
+                        ('answer', 'fg:cyan bold'),
+                        ('pointer', 'fg:yellow bold'),
+                        ('highlighted', 'fg:cyan bold'),
+                        ('selected', 'fg:cyan'),
+                    ])
+                ).ask()
+                
+                if not mode_choice:
+                    print("\n\033[93m[INFO] Exiting interactive menu.\033[0m")
+                    return
+                args.run_mode = mode_choice
+                
+            except KeyboardInterrupt:
                 print("\n\033[93m[INFO] Exiting interactive menu.\033[0m")
                 return
-            args.run_mode = mode_choice
-            
-        except KeyboardInterrupt:
-            print("\n\033[93m[INFO] Exiting interactive menu.\033[0m")
-            return
 
     # Keep args.run_mode fallback for direct CLI invocation
     if not hasattr(args, 'run_mode'):
