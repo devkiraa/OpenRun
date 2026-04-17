@@ -15,7 +15,7 @@ def load_banner():
 
 def main():
     if len(sys.argv) == 1 or (
-        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "-v", "--version", "-h", "--help"]
+        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "-v", "--version", "-h", "--help"]
     ):
         banner = load_banner()
 
@@ -44,6 +44,12 @@ def main():
     run_parser.add_argument("--public", action="store_true", help="Expose server publicly via Cloudflare")
     run_parser.add_argument("--api-key", type=str, help="Require API key for requests")
 
+    # Chat command
+    chat_parser = subparsers.add_parser("chat", help="Start ChatGPT-like web UI with dynamic model loading")
+    chat_parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
+    chat_parser.add_argument("--api-key", type=str, help="Require API key for requests")
+    chat_parser.add_argument("--no-public", action="store_true", help="Disable Cloudflare public URL")
+
     args = parser.parse_args()
 
     if args.version:
@@ -65,6 +71,13 @@ def main():
             run_predefined(args)
         except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
             print("\n\033[93m[INFO] OpenRun Server stopped.\033[0m")
+            sys.exit(0)
+    elif args.command == "chat":
+        from openrun.cli.chat import run_chat
+        try:
+            run_chat(args)
+        except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
+            print("\n\033[93m[INFO] OpenRun Chat stopped.\033[0m")
             sys.exit(0)
     else:
         parser.print_help()

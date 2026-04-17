@@ -9,3 +9,4 @@ class ChatRequest(BaseModel):
     model: Optional[str] = "openrun"
     messages: List[Message]
     stream: Optional[bool] = False
+    chat_id: Optional[str] = None

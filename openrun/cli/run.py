@@ -182,34 +182,41 @@ def run_predefined(args):
         print(f"\033[96m➤\033[0m \033[1mModel :\033[0m {model_key}")
         print(f"\033[96m➤\033[0m \033[1mEngine:\033[0m \033[92m{model_type} (Transformers)\033[0m")
 
-    # Tokens are only for HF models
-    if engine != "ollama" and not os.getenv("HF_TOKEN"):
-        token = None
-        # Check if in Google Colab
-        try:
-            import google.colab
-            from google.colab import userdata
-            try:
-                token = userdata.get('HF_TOKEN')
-                if token:
-                    print("\033[92m✔ Found HF_TOKEN in Colab secrets.\033[0m")
-            except Exception:
-                pass
-        except ImportError:
-            pass
+    # Tokens are only for HF-based models
+    if engine != "ollama":
+        token = os.getenv("HF_TOKEN")
+        is_colab_runtime = False
 
+        # In Colab, prefer a saved secret before prompting.
         if not token:
-            import getpass
-            token = getpass.getpass("\033[93m🔐\033[0m Enter HuggingFace token: ")
-            
+            try:
+                import google.colab
+                from google.colab import userdata
+                is_colab_runtime = True
+                try:
+                    token = userdata.get("HF_TOKEN")
+                    if token:
+                        print("\033[92m✔ Found HF_TOKEN in Colab secrets.\033[0m")
+                except Exception:
+                    token = None
+            except ImportError:
+                pass
+
         if token:
             login(token)
+        else:
+            if is_colab_runtime:
+                print("\033[90m[INFO] No saved HF_TOKEN found in Colab secrets.\033[0m")
+            import getpass
+            token = getpass.getpass("\033[93m🔐\033[0m Enter HuggingFace token: ")
+            if token:
+                login(token)
 
     config = Config(
         model=model,
         file=None,
         port=args.port,
-        public=args.public,
+        public=True,
         api_key=args.api_key
     )
     set_global_state(config=config, model=None)
@@ -241,6 +248,27 @@ def run_predefined(args):
     print("\033[92m✔ Model loaded successfully.\033[0m")
 
     if args.run_mode == "chat":
+        print(f"\n\033[90m[3/3] Booting API server on port {args.port} (background)...\033[0m")
+        app = create_app()
+        print(f"\n\033[92m🚀 OpenRun is LIVE!\033[0m")
+        print(f"📡 \033[1mEndpoint:\033[0m http://localhost:{args.port}/v1/chat/completions")
+        print(f"🧪 \033[1mPlayground:\033[0m http://localhost:{args.port}/chat")
+
+        # Start server in background so local terminal chat can run simultaneously.
+        import threading
+
+        def _run_background_server():
+            try:
+                uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="warning")
+            except BaseException:
+                pass
+
+        server_thread = threading.Thread(target=_run_background_server, daemon=True)
+        server_thread.start()
+
+        time.sleep(1)
+        start_tunnel(config.port)
+
         print(f"\n\033[92m💬 Starting Local Chat with {model}...\033[0m")
         print("\033[90mType 'exit' or 'quit' to stop.\033[0m\n")
         messages = []
@@ -274,9 +302,8 @@ def run_predefined(args):
         return
 
     print(f"\n\033[90m[3/3] Booting API server on port {args.port}...\033[0m")
-    if config.public:
-        time.sleep(1)
-        start_tunnel(config.port)
+    time.sleep(1)
+    start_tunnel(config.port)
 
     # Start FastAPI server
     app = create_app()
