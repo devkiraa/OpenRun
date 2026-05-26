@@ -32,7 +32,7 @@ def main():
         pass
 
     if len(sys.argv) == 1 or (
-        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "models", "-v", "--version", "--models", "-h", "--help"]
+        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "models", "model", "-v", "--version", "--models", "--model", "-h", "--help"]
     ):
         banner = load_banner()
 
@@ -44,11 +44,12 @@ def main():
 
     parser = argparse.ArgumentParser(description="OpenRun - Target any local AI model via an OpenAI-compatible API")
     parser.add_argument("-v", "--version", action="store_true", help="Show OpenRun version")
-    parser.add_argument("--models", action="store_true", help="List all available predefined models")
+    parser.add_argument("--models", "--model", action="store_true", help="List all available predefined models")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Models command
     models_parser = subparsers.add_parser("models", help="List all available predefined models")
+    model_parser = subparsers.add_parser("model", help="List all available predefined models")
 
     # Serve command
     serve_parser = subparsers.add_parser("serve", help="Start the OpenAI-compatible server")
@@ -77,7 +78,7 @@ def main():
         print(f"\033[92mOpenRun v{__version__}\033[0m")
         return
 
-    if args.models or args.command == "models":
+    if args.models or args.command in ["models", "model"]:
         from openrun.cli.models_list import list_models
         list_models()
         return
