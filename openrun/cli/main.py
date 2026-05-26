@@ -14,8 +14,25 @@ def load_banner():
         return "OpenRun"
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+    if hasattr(sys.stderr, "reconfigure"):
+        try:
+            sys.stderr.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
+    try:
+        from openrun.utils.windows_path import check_and_add_windows_path
+        check_and_add_windows_path()
+    except Exception:
+        pass
+
     if len(sys.argv) == 1 or (
-        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "-v", "--version", "-h", "--help"]
+        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "models", "-v", "--version", "--models", "-h", "--help"]
     ):
         banner = load_banner()
 
@@ -27,7 +44,11 @@ def main():
 
     parser = argparse.ArgumentParser(description="OpenRun - Target any local AI model via an OpenAI-compatible API")
     parser.add_argument("-v", "--version", action="store_true", help="Show OpenRun version")
+    parser.add_argument("--models", action="store_true", help="List all available predefined models")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Models command
+    models_parser = subparsers.add_parser("models", help="List all available predefined models")
 
     # Serve command
     serve_parser = subparsers.add_parser("serve", help="Start the OpenAI-compatible server")
@@ -54,6 +75,11 @@ def main():
 
     if args.version:
         print(f"\033[92mOpenRun v{__version__}\033[0m")
+        return
+
+    if args.models or args.command == "models":
+        from openrun.cli.models_list import list_models
+        list_models()
         return
 
     import asyncio
