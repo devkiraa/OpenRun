@@ -13,6 +13,108 @@ def load_banner():
     except Exception:
         return "OpenRun"
 
+def animate_banner(banner_text):
+    import time
+    import math
+    import sys
+    
+    try:
+        import msvcrt
+    except ImportError:
+        msvcrt = None
+        
+    lines = banner_text.splitlines()
+    if not lines:
+        return
+        
+    if not sys.stdout.isatty():
+        print(banner_text)
+        print(f"\033[92m🚀 OpenRun v{__version__}\033[0m")
+        print("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
+        print("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n")
+        return
+        
+    num_lines = len(lines)
+    
+    # Hide cursor
+    sys.stdout.write("\033[?25l")
+    sys.stdout.flush()
+    
+    frame = 0
+    try:
+        while True:
+            screen = []
+            screen.append("") # leading newline
+            
+            # Subtle breathing pulse: overall brightness shifts gently between 0.85 and 1.0
+            breath = 0.9 + 0.1 * math.sin(frame * 0.06)
+            
+            # Phase shifts colors smoothly horizontally over time
+            phase = frame * 0.04
+            
+            for y, line in enumerate(lines):
+                colored_line = []
+                for x, char in enumerate(line):
+                    if char.isspace():
+                        colored_line.append(char)
+                        continue
+                    
+                    # Compute flowing horizontal wave position
+                    pos = (x / 70.0) - phase
+                    
+                    # Premium 'Sunset Ember' warm flowing fire palette:
+                    # - Deep Crimson (210, 30, 15)
+                    # - Fiery Orange (255, 100, 30)
+                    # - Gold / Amber (210, 170, 15)
+                    # - Copper Bronze (165, 100, 0)
+                    r = int((210 + 45 * math.sin(pos * 2 * math.pi)) * breath)
+                    g = int((100 + 70 * math.cos(pos * 2 * math.pi)) * breath)
+                    b = int((15 + 15 * math.sin(pos * 2 * math.pi)) * breath)
+                    
+                    r = max(0, min(255, r))
+                    g = max(0, min(255, g))
+                    b = max(0, min(255, b))
+                    
+                    colored_line.append(f"\033[38;2;{r};{g};{b}m{char}")
+                screen.append("".join(colored_line) + "\033[0m")
+            
+            # Static metadata
+            screen.append(f"\033[92m🚀 OpenRun v{__version__}\033[0m")
+            screen.append("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
+            screen.append("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n")
+            screen.append("\033[90m[ Press any key or Ctrl+C to exit ]\033[0m")
+            
+            screen_content = "\n".join(screen) + "\n"
+            sys.stdout.write(screen_content)
+            sys.stdout.flush()
+            
+            # Exit keypress hook
+            if msvcrt and msvcrt.kbhit():
+                while msvcrt.kbhit():
+                    msvcrt.getch()
+                sys.stdout.write(f"\033[{screen_content.count(chr(10))}A")
+                sys.stdout.write("\n" + "\n".join(f"\033[96m{l}\033[0m" for l in lines) + "\n")
+                sys.stdout.write(f"\033[92m🚀 OpenRun v{__version__}\033[0m\n")
+                sys.stdout.write("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n\n")
+                sys.stdout.write("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n\n")
+                sys.stdout.flush()
+                break
+                
+            total_lines = screen_content.count("\n")
+            sys.stdout.write(f"\033[{total_lines}A")
+            sys.stdout.flush()
+            
+            frame += 1
+            time.sleep(0.03) # smooth 30fps
+            
+    except KeyboardInterrupt:
+        sys.stdout.write(f"\033[{screen_content.count(chr(10))}B")
+        sys.stdout.flush()
+        print("\n\033[93m[INFO] OpenRun banner animation stopped.\033[0m")
+    finally:
+        sys.stdout.write("\033[?25h")
+        sys.stdout.flush()
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         try:
@@ -35,11 +137,7 @@ def main():
         len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "models", "model", "-v", "--version", "--models", "--model", "-h", "--help"]
     ):
         banner = load_banner()
-
-        print("\n\033[96m" + banner + "\033[0m")
-        print(f"\033[92m🚀 OpenRun v{__version__}\033[0m")
-        print("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
-        print("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n")
+        animate_banner(banner)
         return
 
     parser = argparse.ArgumentParser(description="OpenRun - Target any local AI model via an OpenAI-compatible API")
