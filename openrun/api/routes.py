@@ -20,57 +20,62 @@ PLAYGROUND_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenRun Playground</title>
+    <title>OpenRun Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f7f7f8;
-            color: #202123;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
         }
 
         input, select, button, textarea {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .app-shell {
             height: 100vh;
             display: grid;
-            grid-template-columns: 250px 1fr;
+            grid-template-columns: 280px 1fr;
             gap: 0;
         }
 
         .sidebar {
-            border-right: 1px solid #e5e7eb;
-            background: #ffffff;
-            padding: 14px 10px;
-            overflow: auto;
+            background: #0f172a;
+            border-right: 1px solid #1e293b;
+            padding: 20px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            color: #f1f5f9;
         }
 
         .sidebar-item {
             width: 100%;
             text-align: left;
-            font-size: 12px;
-            padding: 8px 10px;
-            border-radius: 8px;
-            color: #4b5563;
-            margin-bottom: 4px;
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: #94a3b8;
+            margin-bottom: 6px;
             border: 1px solid transparent;
-            transition: all 0.15s ease;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .sidebar-item:hover {
-            background: #f9fafb;
-            border-color: #e5e7eb;
-            color: #111827;
+            background: #1e293b;
+            color: #ffffff;
         }
 
         .sidebar-item.active {
-            background: #ecfeff;
-            color: #0f766e;
-            border-color: #99f6e4;
+            background: #0284c7;
+            color: #ffffff;
             font-weight: 600;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
         }
 
         .main-area {
@@ -78,865 +83,968 @@ PLAYGROUND_HTML = """
             flex-direction: column;
             min-width: 0;
             background: #f8fafc;
-        }
-
-        .top-controls {
-            display: grid;
-            gap: 6px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 8px;
-            min-width: 560px;
-        }
-
-        .top-controls-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
+            position: relative;
         }
 
         .status-chip {
-            font-size: 10px;
-            color: #4b5563;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
+            font-size: 11px;
+            color: #64748b;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
             border-radius: 9999px;
-            padding: 2px 8px;
-            white-space: nowrap;
+            padding: 4px 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .markdown-body pre { background-color: #f1f5f9; color: #0f172a; padding: 1rem; border-radius: 0.75rem; overflow-x: auto; margin: 1rem 0; box-shadow: inset 0 0 0 1px #dbe2ea; position: relative; }
-        .markdown-body code { background-color: #eef2ff; border-radius: 0.25rem; padding: 0.2em 0.4em; }
-        .markdown-body pre code { background-color: transparent; padding: 0; }
-        .message-content { white-space: pre-wrap; line-height: 1.6; }
+        .markdown-body pre { 
+            background-color: #0f172a; 
+            color: #e2e8f9; 
+            padding: 1.25rem; 
+            border-radius: 12px; 
+            overflow-x: auto; 
+            margin: 1rem 0; 
+            position: relative; 
+            border: 1px solid #1e293b;
+        }
+        .markdown-body code { 
+            background-color: #f1f5f9; 
+            color: #0f766e;
+            border-radius: 6px; 
+            padding: 0.2em 0.4em; 
+            font-size: 90%;
+            font-family: monospace;
+        }
+        .markdown-body pre code { 
+            background-color: transparent; 
+            color: inherit;
+            padding: 0; 
+            border-radius: 0;
+        }
+        .message-content { 
+            white-space: pre-wrap; 
+            line-height: 1.7; 
+        }
 
-        .copy-button { position: absolute; top: 0.5rem; right: 0.5rem; background: #e2e8f0; border: none; color: #334155; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; cursor: pointer; opacity: 0; transition: all 0.2s; }
-        .markdown-body pre:hover .copy-button { opacity: 1; }
-        .copy-button:hover { background: #cbd5e1; color: #0f172a; }
+        .copy-button { 
+            position: absolute; 
+            top: 0.6rem; 
+            right: 0.6rem; 
+            background: #1e293b; 
+            border: 1px solid #334155; 
+            color: #94a3b8; 
+            padding: 0.3rem 0.6rem; 
+            border-radius: 6px; 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            opacity: 0; 
+            transition: all 0.2s; 
+        }
+        .markdown-body pre:hover .copy-button { 
+            opacity: 1; 
+        }
+        .copy-button:hover { 
+            background: #334155; 
+            color: #ffffff; 
+        }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar { 
+            width: 6px; 
+            height: 6px; 
+        }
+        ::-webkit-scrollbar-track { 
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 3px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: #94a3b8; 
+        }
 
-        .typing-indicator { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 4px; }
-        .dot { width: 6px; height: 6px; background-color: #64748b; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .typing-indicator { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 4px; 
+            height: 24px; 
+            padding: 0 4px; 
+        }
+        .dot { 
+            width: 7px; 
+            height: 7px; 
+            background-color: #94a3b8; 
+            border-radius: 50%; 
+            animation: bounce 1.4s infinite ease-in-out both; 
+        }
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+        @keyframes bounce { 
+            0%, 80%, 100% { transform: scale(0); opacity: 0.4; } 
+            40% { transform: scale(1); opacity: 1; } 
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         @media (max-width: 900px) {
             .app-shell { grid-template-columns: 1fr; }
             .sidebar { display: none; }
-            .top-controls { min-width: 0; width: 100%; }
         }
     </style>
 </head>
 <body class="h-screen antialiased">
 <div class="app-shell">
+    <!-- Sidebar Dark Panel -->
     <aside class="sidebar">
-        <div class="text-sm font-semibold text-gray-900 mb-4 px-2">Playground</div>
-        <button id="new-chat-btn" class="sidebar-item">+ New Chat</button>
-        <div class="text-[10px] uppercase tracking-wide text-gray-400 mt-4 mb-2 px-2">My Chats</div>
-        <div id="chats-list"></div>
-    </aside>
-
-    <div class="main-area">
-    
-    <!-- Top Nav -->
-    <header class="bg-white border-b border-gray-200 px-5 py-3 flex justify-between items-center shadow-sm z-20 flex-shrink-0 sticky top-0">
-        <div class="flex items-center gap-3">
-            <div class="h-9 w-9 bg-gradient-to-br from-cyan-500 to-emerald-400 rounded-xl flex items-center justify-center shadow-sm">
+        <div class="flex items-center gap-3 mb-6 px-2">
+            <div class="h-9 w-9 bg-gradient-to-br from-sky-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.522 4.477 10 10 10s10-4.478 10-10C22 6.477 17.522 2 12 2zm1.25 15.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zm-.8-2.6a1 1 0 01-1-.87L11.4 8h1.2l-.05 6.03a1 1 0 01-.1.37z" clip-rule="evenodd" />
                 </svg>
             </div>
             <div>
-                <h1 class="text-base font-semibold text-gray-900 tracking-tight">OpenRun <span class="text-cyan-600 font-semibold">Studio</span></h1>
-                <div class="text-[11px] text-gray-500 font-medium flex items-center gap-1.5 mt-0.5">
-                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                    Running: <span id="model-name-display" class="text-gray-700 font-mono">No model loaded</span>
-                </div>
+                <h1 class="text-sm font-bold text-white tracking-wider">OPENRUN STUDIO</h1>
+                <div class="text-[10px] text-sky-400 font-semibold tracking-widest mt-0.5">LOCAL API HUB</div>
             </div>
         </div>
-        
-        <div class="top-controls">
-            <div class="top-controls-row">
-                <select id="model-select" class="bg-white border border-gray-300 text-gray-800 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 outline-none w-44 sm:w-56">
-                    <option value="">Select model...</option>
-                </select>
 
-                <input type="password" id="hf-token" placeholder="HF token (optional)" class="bg-white border border-gray-300 text-gray-800 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 outline-none w-52 font-mono placeholder-gray-400 transition-all">
+        <button id="new-chat-btn" class="sidebar-item bg-slate-800 hover:bg-slate-700 text-white font-medium px-4 py-2.5 rounded-xl border border-slate-700 mb-6 transition flex justify-center items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            New Conversation
+        </button>
 
-                <button id="load-model-btn" class="bg-cyan-500 hover:bg-cyan-400 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-2">RECENT CHATS</div>
+        <div id="chats-list" class="flex-1 space-y-1 overflow-y-auto mb-4"></div>
+
+        <!-- Collapsible Settings Panel -->
+        <div class="border-t border-slate-800 pt-4">
+            <button onclick="toggleSettingsPanel()" class="w-full flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider px-2 py-1.5 hover:text-white transition">
+                <span>⚙️ Server Settings</span>
+                <span id="settings-chevron" class="transition-transform duration-200">▼</span>
+            </button>
+            
+            <div id="settings-panel" class="hidden space-y-3.5 mt-3 px-1 transition-all duration-200">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Select Model</label>
+                    <select id="model-select" class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-2 focus:border-sky-500 outline-none">
+                        <option value="">Select model...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hugging Face Token</label>
+                    <input type="password" id="hf-token" placeholder="Optional token..." class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-2 focus:border-sky-500 outline-none font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">API Password/Key</label>
+                    <input type="password" id="api-key" placeholder="Optional auth key..." class="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-2 focus:border-sky-500 outline-none font-mono">
+                </div>
+
+                <button id="load-model-btn" class="w-full bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold py-2 rounded-lg transition">
                     Load Model
                 </button>
+            </div>
+        </div>
+    </aside>
 
-                <button id="clear-btn" class="text-gray-400 hover:text-rose-500 transition-colors p-2 rounded-lg hover:bg-gray-100" title="Clear Chat">
+    <!-- Main Chat Workspace -->
+    <div class="main-area">
+        <!-- Top Navigation -->
+        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex justify-between items-center z-20 flex-shrink-0 sticky top-0 shadow-sm">
+            <div class="flex items-center gap-3">
+                <span class="flex h-3 w-3 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <div>
+                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">ACTIVE ENGINE</div>
+                    <h2 id="model-name-display" class="text-sm font-bold text-slate-800 mt-0.5 font-mono">Connecting...</h2>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span id="model-load-status" class="status-chip">Idle</span>
+                <span id="live-metrics" class="status-chip">TPS: 0.00</span>
+                <button id="clear-btn" class="text-slate-400 hover:text-rose-500 p-2 rounded-lg hover:bg-slate-100 transition" title="Clear Conversation">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                 </button>
             </div>
+        </header>
 
-            <div class="top-controls-row">
-                <input type="password" id="api-key" placeholder="API Key (Optional)..." class="bg-white border border-gray-300 text-gray-800 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 outline-none w-64 font-mono placeholder-gray-400 transition-all">
-                <span id="model-load-status" class="status-chip">No model loaded</span>
-                <span id="live-metrics" class="status-chip">Tokens: 0 | TPS: 0</span>
-            </div>
-        </div>
-
-    </header>
-
-    <section id="model-gate" class="flex-1 flex items-center justify-center p-6 sm:p-10 bg-[#f8fafc]">
-        <div class="max-w-xl w-full rounded-2xl border border-cyan-100 bg-white shadow-sm p-6 sm:p-8 text-center">
-            <div class="h-12 w-12 mx-auto rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 11c0-1.657 1.343-3 3-3s3 1.343 3 3v5H6v-5c0-1.657 1.343-3 3-3s3 1.343 3 3zm0 0V7m0 0a2 2 0 100-4 2 2 0 000 4z" />
-                </svg>
-            </div>
-            <h2 class="text-xl sm:text-2xl font-semibold text-gray-900">Load a model to start chat</h2>
-            <p class="mt-2 text-sm text-gray-600">Select a model from the top dropdown and click <span class="font-semibold text-cyan-700">Load Model</span>. The chat interface will unlock once the model is ready.</p>
-        </div>
-    </section>
-
-    <!-- Chat Area -->
-    <main id="chat-container" class="hidden flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 scroll-smooth bg-[#f8fafc]">
-        <!-- Empty State -->
-        <div id="empty-state" class="h-full flex flex-col items-center justify-center text-gray-500 space-y-6 animate-fade-in relative z-0">
-            <div class="h-20 w-20 bg-white rounded-[2rem] flex items-center justify-center border border-gray-200 shadow-sm mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-            </div>
-            <h2 class="text-2xl font-semibold text-gray-900">How can I help you today?</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full mt-8">
-                <button class="suggestion-btn text-left p-5 rounded-2xl border border-gray-200 bg-white hover:bg-cyan-50 hover:border-cyan-200 transition-all group shadow-sm">
-                    <div class="font-semibold text-gray-800 mb-1 group-hover:text-cyan-700 transition-colors">Write a Python script</div>
-                    <div class="text-sm text-gray-500">to scrape data from a website</div>
-                </button>
-                <button class="suggestion-btn text-left p-5 rounded-2xl border border-gray-200 bg-white hover:bg-cyan-50 hover:border-cyan-200 transition-all group shadow-sm">
-                    <div class="font-semibold text-gray-800 mb-1 group-hover:text-cyan-700 transition-colors">Explain quantum computing</div>
-                    <div class="text-sm text-gray-500">as if I am 5 years old</div>
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- Input Footer -->
-    <div id="chat-input-footer" class="hidden border-t border-gray-200 bg-white/95 backdrop-blur-sm px-4 sm:px-6 py-4 pointer-events-auto">
-        <div class="max-w-4xl mx-auto relative">
-            
-            <div id="error-toast" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-rose-500/90 text-white px-5 py-2.5 rounded-xl text-sm shadow-xl border border-rose-400 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 font-medium backdrop-blur-md translate-y-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                </svg>
-                <span id="error-msg"></span>
-            </div>
-            
-            <!-- Stop Generating -->
-            <div class="flex justify-center w-full absolute -top-16 pointer-events-none">
-                <button id="stop-btn" class="hidden pointer-events-auto bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 text-xs font-semibold px-4 py-2 rounded-full shadow-sm transition-all items-center gap-2 backdrop-blur-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-rose-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
+        <!-- Blocking Model Gate -->
+        <section id="model-gate" class="flex-1 flex items-center justify-center p-6 bg-[#f8fafc]">
+            <div class="max-w-md w-full rounded-2xl border border-slate-200 bg-white shadow-xl p-8 text-center animate-fade-in">
+                <div class="h-14 w-14 mx-auto rounded-full bg-sky-50 flex items-center justify-center mb-5 border border-sky-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-sky-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    Stop generating
-                </button>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800">Booting OpenRun Runtime</h2>
+                <p class="mt-3 text-sm text-slate-500 leading-relaxed">Please wait while the active model resolves, or toggle the <b>Server Settings</b> panel in the sidebar to configure a model.</p>
+                <div class="mt-6 flex justify-center">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
+                </div>
             </div>
+        </section>
 
-            <!-- Text Box -->
-            <div class="relative bg-white rounded-2xl border border-gray-300 shadow-sm focus-within:border-cyan-500/60 focus-within:ring-2 focus-within:ring-cyan-500/20 transition-all flex flex-col pb-12">
-                <textarea id="message-input" rows="1" class="w-full bg-transparent text-gray-900 placeholder-gray-500 px-5 pt-4 pb-2 rounded-2xl focus:outline-none resize-none max-h-48 overflow-y-auto leading-relaxed text-[15px]" placeholder="Send a message..." autofocus></textarea>
-                
-                <div class="absolute bottom-3 right-3 flex items-center gap-2">
-                    <label class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg pointer-events-auto hover:bg-gray-200 transition cursor-pointer border border-gray-200">
-                        <input type="checkbox" id="stream-toggle" class="rounded bg-white border-gray-300 text-cyan-500 focus:ring-offset-white focus:ring-cyan-500 cursor-pointer w-3.5 h-3.5" checked>
-                        Stream
-                    </label>
-                    <button id="send-btn" class="bg-cyan-500 hover:bg-cyan-400 text-white h-9 w-9 rounded-[10px] flex items-center justify-center transition-all disabled:opacity-40 disabled:hover:bg-cyan-500 disabled:cursor-not-allowed transform active:scale-95 shadow-sm" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
-                        </svg>
+        <!-- Dynamic Chat Container -->
+        <main id="chat-container" class="hidden flex-1 overflow-y-auto px-6 py-8 space-y-6 scroll-smooth">
+            <!-- Welcome Screen / suggestions -->
+            <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-6 animate-fade-in py-12">
+                <div class="h-16 w-16 bg-white rounded-2xl flex items-center justify-center border border-slate-200 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">What can I build for you today?</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full pt-4">
+                    <button class="suggestion-btn text-left p-5 rounded-2xl border border-slate-200 bg-white hover:bg-sky-50 hover:border-sky-200 transition group shadow-sm">
+                        <div class="font-bold text-slate-800 mb-1 group-hover:text-sky-600 transition-colors">Write a Python script</div>
+                        <div class="text-xs text-slate-500">to load any local model with OpenRun</div>
+                    </button>
+                    <button class="suggestion-btn text-left p-5 rounded-2xl border border-slate-200 bg-white hover:bg-sky-50 hover:border-sky-200 transition group shadow-sm">
+                        <div class="font-bold text-slate-800 mb-1 group-hover:text-sky-600 transition-colors">Design an OpenAI integration</div>
+                        <div class="text-xs text-slate-500">using standard compatible API wrappers</div>
                     </button>
                 </div>
             </div>
-            
-            <div class="text-center mt-2 text-[11px] font-medium text-gray-500">
-                OpenRun Studio | OpenAI-compatible backend |
-                <a href="/v1/chat/completions" target="_blank" class="text-cyan-600 hover:underline">/v1/chat/completions</a> |
-                <a href="/models" target="_blank" class="text-cyan-600 hover:underline">/models</a> |
-                <a href="/v1/models" target="_blank" class="text-cyan-600 hover:underline">/v1/models</a> |
-                <a href="/models/catalog" target="_blank" class="text-cyan-600 hover:underline">/models/catalog</a> |
-                <a href="/v1/models/catalog" target="_blank" class="text-cyan-600 hover:underline">/v1/models/catalog</a> |
-                <a href="/models/status" target="_blank" class="text-cyan-600 hover:underline">/models/status</a> |
-                <a href="/v1/models/status" target="_blank" class="text-cyan-600 hover:underline">/v1/models/status</a> |
-                <a href="/v1/chats" target="_blank" class="text-cyan-600 hover:underline">/v1/chats</a>
+        </main>
+
+        <!-- Input Footer with control blocks -->
+        <div id="chat-input-footer" class="hidden border-t border-slate-200 bg-white/95 backdrop-blur-sm px-6 py-5">
+            <div class="max-w-4xl mx-auto relative">
+                
+                <!-- Error message toast -->
+                <div id="error-toast" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-rose-500 text-white px-5 py-2.5 rounded-xl text-sm shadow-xl border border-rose-400 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 font-semibold z-50 translate-y-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <span id="error-msg"></span>
+                </div>
+                
+                <!-- Stop Generation Button -->
+                <div class="flex justify-center w-full absolute -top-16 pointer-events-none">
+                    <button id="stop-btn" class="hidden pointer-events-auto bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full shadow-md transition items-center gap-2">
+                        <span class="flex h-2 w-2 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                        </span>
+                        Stop generation
+                    </button>
+                </div>
+
+                <!-- Input Text Box -->
+                <div class="relative bg-white rounded-2xl border border-slate-300 shadow-lg focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-500/10 transition flex flex-col pb-14">
+                    <textarea id="message-input" rows="1" class="w-full bg-transparent text-slate-800 placeholder-slate-400 px-5 pt-4 pb-2 rounded-2xl focus:outline-none resize-none max-h-48 overflow-y-auto leading-relaxed text-[15px]" placeholder="Ask the model anything..." autofocus></textarea>
+                    
+                    <div class="absolute bottom-3 right-3 flex items-center gap-2">
+                        <label class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition cursor-pointer border border-slate-200 select-none">
+                            <input type="checkbox" id="stream-toggle" class="rounded bg-white border-slate-300 text-sky-500 focus:ring-offset-white focus:ring-sky-500 cursor-pointer w-3.5 h-3.5" checked>
+                            Stream
+                        </label>
+                        <button id="send-btn" class="bg-sky-500 hover:bg-sky-400 text-white h-9 w-9 rounded-xl flex items-center justify-center transition disabled:opacity-40 disabled:hover:bg-sky-500 disabled:cursor-not-allowed transform active:scale-95 shadow-sm" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                    OpenRun Studio | OpenAI Compatible | 
+                    <a href="/v1/chat/completions" target="_blank" class="text-sky-500 hover:underline">/v1/chat/completions</a> |
+                    <a href="/models" target="_blank" class="text-sky-500 hover:underline">/models</a>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-        const API_URL = '/v1/chat/completions';
-        const HEALTH_URL = '/';
-        const MODELS_URL = '/models';
-        const MODELS_CATALOG_URL = '/models/catalog';
-        const MODEL_STATUS_URL = '/models/status';
-        const MODEL_LOAD_URL = '/models/load';
-        const CHATS_URL = '/v1/chats';
-        const METRICS_LIVE_URL = '/v1/metrics/live';
-        
-        let messages = [];
-        let isGenerating = false;
-        let abortController = null;
-        let modelReady = false;
-        let modelStatusPoll = null;
-        let currentChatId = null;
-        let metricsPoll = null;
-        
-        const chatContainer = document.getElementById('chat-container');
-        const modelGate = document.getElementById('model-gate');
-        const chatInputFooter = document.getElementById('chat-input-footer');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const clearBtn = document.getElementById('clear-btn');
-        const emptyState = document.getElementById('empty-state');
-        const apiKeyInput = document.getElementById('api-key');
-        const hfTokenInput = document.getElementById('hf-token');
-        const modelSelect = document.getElementById('model-select');
-        const loadModelBtn = document.getElementById('load-model-btn');
-        const modelLoadStatus = document.getElementById('model-load-status');
-        const liveMetrics = document.getElementById('live-metrics');
-        const chatsList = document.getElementById('chats-list');
-        const newChatBtn = document.getElementById('new-chat-btn');
-        const streamToggle = document.getElementById('stream-toggle');
-        const errorToast = document.getElementById('error-toast');
-        const errorMsg = document.getElementById('error-msg');
-        const modelNameDisplay = document.getElementById('model-name-display');
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    const API_URL = '/v1/chat/completions';
+    const HEALTH_URL = '/';
+    const MODELS_URL = '/models';
+    const MODELS_CATALOG_URL = '/models/catalog';
+    const MODEL_STATUS_URL = '/models/status';
+    const MODEL_LOAD_URL = '/models/load';
+    const CHATS_URL = '/v1/chats';
+    const METRICS_LIVE_URL = '/v1/metrics/live';
+    
+    let messages = [];
+    let isGenerating = false;
+    let abortController = null;
+    let modelReady = false;
+    let modelStatusPoll = null;
+    let currentChatId = null;
+    let metricsPoll = null;
+    
+    const chatContainer = document.getElementById('chat-container');
+    const modelGate = document.getElementById('model-gate');
+    const chatInputFooter = document.getElementById('chat-input-footer');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const emptyState = document.getElementById('empty-state');
+    const apiKeyInput = document.getElementById('api-key');
+    const hfTokenInput = document.getElementById('hf-token');
+    const modelSelect = document.getElementById('model-select');
+    const loadModelBtn = document.getElementById('load-model-btn');
+    const modelLoadStatus = document.getElementById('model-load-status');
+    const liveMetrics = document.getElementById('live-metrics');
+    const chatsList = document.getElementById('chats-list');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const streamToggle = document.getElementById('stream-toggle');
+    const errorToast = document.getElementById('error-toast');
+    const errorMsg = document.getElementById('error-msg');
+    const modelNameDisplay = document.getElementById('model-name-display');
 
-        function updateModelAccessUI() {
-            if (modelReady) {
-                modelGate.classList.add('hidden');
-                chatContainer.classList.remove('hidden');
-                chatInputFooter.classList.remove('hidden');
-                newChatBtn.disabled = false;
-                newChatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                return;
-            }
+    function toggleSettingsPanel() {
+        const panel = document.getElementById('settings-panel');
+        const chevron = document.getElementById('settings-chevron');
+        panel.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-180');
+    }
 
-            modelGate.classList.remove('hidden');
-            chatContainer.classList.add('hidden');
-            chatInputFooter.classList.add('hidden');
-            newChatBtn.disabled = true;
-            newChatBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    function updateModelAccessUI() {
+        if (modelReady) {
+            modelGate.classList.add('hidden');
+            chatContainer.classList.remove('hidden');
+            chatInputFooter.classList.remove('hidden');
+            newChatBtn.disabled = false;
+            newChatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            return;
         }
 
-        function updateSendButtonState() {
-            sendBtn.disabled = isGenerating || !modelReady || messageInput.value.trim() === '';
-            updateModelAccessUI();
+        modelGate.classList.remove('hidden');
+        chatContainer.classList.add('hidden');
+        chatInputFooter.classList.add('hidden');
+        newChatBtn.disabled = true;
+        newChatBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    function updateSendButtonState() {
+        sendBtn.disabled = isGenerating || !modelReady || messageInput.value.trim() === '';
+        updateModelAccessUI();
+    }
+
+    function clearChatView() {
+        messages = [];
+        Array.from(chatContainer.children).forEach(child => { if (child.id !== 'empty-state') child.remove(); });
+        emptyState.style.display = 'flex';
+    }
+
+    function renderExistingMessages(chatMessages) {
+        clearChatView();
+        for (const msg of (chatMessages || [])) {
+            const { element } = createMessageElement(msg.role, msg.content || '');
+            chatContainer.appendChild(element);
         }
-
-        function clearChatView() {
-            messages = [];
-            Array.from(chatContainer.children).forEach(child => { if (child.id !== 'empty-state') child.remove(); });
-            emptyState.style.display = 'flex';
+        if ((chatMessages || []).length > 0) {
+            emptyState.style.display = 'none';
         }
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
+    }
 
-        function renderExistingMessages(chatMessages) {
-            clearChatView();
-            for (const msg of (chatMessages || [])) {
-                const { element } = createMessageElement(msg.role, msg.content || '');
-                chatContainer.appendChild(element);
-            }
-            if ((chatMessages || []).length > 0) {
-                emptyState.style.display = 'none';
-            }
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
-        }
-
-        async function fetchChats() {
-            try {
-                const apiKey = apiKeyInput.value.trim();
-                const headers = {
-                    ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-                };
-                const res = await fetch(CHATS_URL, { headers });
-                if (!res.ok) {
-                    showError(`Chats API error (${res.status})`);
-                    return;
-                }
-                const data = await res.json();
-                const chats = data.data || [];
-
-                chatsList.innerHTML = '';
-                chats.forEach(chat => {
-                    const btn = document.createElement('button');
-                    btn.className = `sidebar-item ${chat.id === currentChatId ? 'active' : ''}`;
-                    btn.textContent = chat.title || 'Untitled Chat';
-                    btn.title = chat.title || 'Untitled Chat';
-                    btn.addEventListener('click', () => openChat(chat.id));
-                    chatsList.appendChild(btn);
-                });
-
-                if (!currentChatId && chats.length) {
-                    await openChat(chats[0].id);
-                }
-                updateModelAccessUI();
-            } catch (err) {
-                showError('Unable to fetch chats');
-            }
-        }
-
-        async function createChat(title = 'New Chat') {
+    async function fetchChats() {
+        try {
             const apiKey = apiKeyInput.value.trim();
             const headers = {
-                'Content-Type': 'application/json',
                 ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
             };
-            const res = await fetch(CHATS_URL, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ title })
+            const res = await fetch(CHATS_URL, { headers });
+            if (!res.ok) {
+                showError(`Chats API error (${res.status})`);
+                return;
+            }
+            const data = await res.json();
+            const chats = data.data || [];
+
+            chatsList.innerHTML = '';
+            chats.forEach(chat => {
+                const btn = document.createElement('button');
+                btn.className = `sidebar-item ${chat.id === currentChatId ? 'active' : ''}`;
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg> ${chat.title || 'Untitled Chat'}`;
+                btn.title = chat.title || 'Untitled Chat';
+                btn.addEventListener('click', () => openChat(chat.id));
+                chatsList.appendChild(btn);
             });
-            if (!res.ok) {
-                showError('Failed to create chat');
-                return null;
-            }
-            const data = await res.json();
-            const chat = data.chat;
-            currentChatId = chat?.id || null;
-            clearChatView();
-            await fetchChats();
-            return currentChatId;
-        }
 
-        async function openChat(chatId) {
-            if (!chatId) return;
-            if (!modelReady) return;
+            if (!currentChatId && chats.length) {
+                await openChat(chats[0].id);
+            }
+            updateModelAccessUI();
+        } catch (err) {
+            showError('Unable to fetch chats');
+        }
+    }
+
+    async function createChat(title = 'New Chat') {
+        const apiKey = apiKeyInput.value.trim();
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
+        };
+        const res = await fetch(CHATS_URL, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ title })
+        });
+        if (!res.ok) {
+            showError('Failed to create chat');
+            return null;
+        }
+        const data = await res.json();
+        const chat = data.chat;
+        currentChatId = chat?.id || null;
+        clearChatView();
+        await fetchChats();
+        return currentChatId;
+    }
+
+    async function openChat(chatId) {
+        if (!chatId) return;
+        if (!modelReady) return;
+        const apiKey = apiKeyInput.value.trim();
+        const headers = {
+            ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
+        };
+        const res = await fetch(`${CHATS_URL}/${chatId}`, { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.ok) {
+            showError(data.error || 'Failed to open chat');
+            return;
+        }
+        currentChatId = chatId;
+        renderExistingMessages(data.chat?.messages || []);
+        await fetchChats();
+    }
+
+    async function fetchLiveMetrics() {
+        const apiKey = apiKeyInput.value.trim();
+        const headers = {
+            ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
+        };
+        const res = await fetch(METRICS_LIVE_URL, { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        const m = data.data;
+        if (!m) {
+            liveMetrics.textContent = 'TPS: 0.00';
+            return;
+        }
+        liveMetrics.textContent = `Prompt: ${m.prompt_tokens} | Comp: ${m.completion_tokens} | TPS: ${m.tokens_per_sec}`;
+    }
+
+    async function fetchHealth() {
+        try {
+            const res = await fetch(HEALTH_URL);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.model) {
+                    modelNameDisplay.textContent = data.model.split('/').pop() || data.model;
+                    modelReady = true;
+                    modelLoadStatus.textContent = 'Active';
+                    modelLoadStatus.className = "status-chip bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold";
+                    updateModelAccessUI();
+                } else {
+                    modelNameDisplay.textContent = "No active model";
+                }
+            }
+        } catch (e) {
+            modelNameDisplay.textContent = "Offline";
+            modelNameDisplay.classList.add("text-rose-400");
+        }
+    }
+
+    async function fetchModels() {
+        try {
             const apiKey = apiKeyInput.value.trim();
             const headers = {
                 ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
             };
-            const res = await fetch(`${CHATS_URL}/${chatId}`, { headers });
-            if (!res.ok) return;
-            const data = await res.json();
-            if (!data.ok) {
-                showError(data.error || 'Failed to open chat');
-                return;
-            }
-            currentChatId = chatId;
-            renderExistingMessages(data.chat?.messages || []);
-            await fetchChats();
-        }
-
-        async function fetchLiveMetrics() {
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            const res = await fetch(METRICS_LIVE_URL, { headers });
-            if (!res.ok) return;
-            const data = await res.json();
-            const m = data.data;
-            if (!m) {
-                liveMetrics.textContent = 'Tokens: 0 | TPS: 0';
-                return;
-            }
-            liveMetrics.textContent = `Prompt: ${m.prompt_tokens} | Completion: ${m.completion_tokens} | TPS: ${m.tokens_per_sec}`;
-        }
-
-        async function fetchHealth() {
-            try {
-                const res = await fetch(HEALTH_URL);
-                if (res.ok) {
-                    const data = await res.json();
-                    modelNameDisplay.textContent = data.model || "No model loaded";
-                }
-            } catch (e) {
-                modelNameDisplay.textContent = "Offline";
-                modelNameDisplay.classList.add("text-rose-400");
-                modelNameDisplay.parentElement.querySelector('span').classList.replace("bg-emerald-400", "bg-rose-500");
-            }
-        }
-
-        async function fetchModels() {
-            try {
-                const apiKey = apiKeyInput.value.trim();
-                const headers = {
-                    ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-                };
-                // Always load available models from public catalog first.
-                let catalogRes = await fetch(MODELS_CATALOG_URL);
-                if (!catalogRes.ok) {
-                    catalogRes = await fetch('/v1/models/catalog');
-                }
-                if (!catalogRes.ok) {
-                    modelLoadStatus.textContent = 'Failed to fetch models';
-                    showError(`Model catalog error (${catalogRes.status})`);
-                    return;
-                }
-                const catalog = await catalogRes.json();
-
-                // Enrich with loaded-state if available.
-                let loadedMap = new Map();
-                let loadingData = null;
-                let stateRes = await fetch(MODELS_URL, { headers });
-                if (!stateRes.ok) {
-                    stateRes = await fetch('/v1/models', { headers });
-                }
-                if (stateRes.ok) {
-                    const stateData = await stateRes.json();
-                    loadingData = stateData.loading;
-                    for (const m of (stateData.data || [])) {
-                        loadedMap.set(m.id, !!m.loaded);
-                    }
-                }
-
-                modelSelect.innerHTML = '<option value="">Select model...</option>';
-                for (const item of catalog.data || []) {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.textContent = `${item.id} | ${item.size || 'N/A'} | Ctx ${item.context || 'N/A'} | ${item.speed || 'N/A'} | ${item.engine}`;
-                    if (loadedMap.get(item.id)) {
-                        option.selected = true;
-                        modelReady = true;
-                        modelLoadStatus.textContent = `Loaded: ${item.id}`;
-                        modelNameDisplay.textContent = item.name || item.id;
-                    }
-                    modelSelect.appendChild(option);
-                }
-
-                if (loadingData?.status === 'loading' || loadingData?.status === 'queued') {
-                    modelReady = false;
-                    modelLoadStatus.textContent = `Loading ${formatLoadStatus(loadingData)}`;
-                    loadModelBtn.disabled = true;
-                    loadModelBtn.textContent = 'Loading...';
-                    if (!modelStatusPoll) {
-                        modelStatusPoll = setInterval(pollModelStatus, 1500);
-                    }
-                }
-
-                updateSendButtonState();
-            } catch (err) {
+            
+            let catalogRes = await fetch(MODELS_CATALOG_URL);
+            if (!catalogRes.ok) catalogRes = await fetch('/v1/models/catalog');
+            if (!catalogRes.ok) {
                 modelLoadStatus.textContent = 'Failed to fetch models';
-                showError('Unable to fetch model list');
-            }
-        }
-
-        function formatLoadStatus(info) {
-            const stage = info?.stage ? ` - ${info.stage}` : '';
-            const progress = Number.isFinite(info?.progress) ? ` (${info.progress}%)` : '';
-            const elapsed = Number.isFinite(info?.elapsed_seconds) ? ` - ${info.elapsed_seconds}s` : '';
-            const message = info?.message ? ` - ${info.message}` : '';
-            return `${info?.model_key || 'model'}${stage}${progress}${elapsed}${message}`;
-        }
-
-        async function pollModelStatus() {
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            let res = await fetch(MODEL_STATUS_URL, { headers });
-            if (!res.ok) {
-                res = await fetch('/v1/models/status', { headers });
-            }
-            if (!res.ok) {
-                showError(`Model status API error (${res.status})`);
                 return;
             }
-            const status = await res.json();
+            const catalog = await catalogRes.json();
 
-            if (status.status === 'loading' || status.status === 'queued') {
+            let loadedMap = new Map();
+            let loadingData = null;
+            let stateRes = await fetch(MODELS_URL, { headers });
+            if (!stateRes.ok) stateRes = await fetch('/v1/models', { headers });
+            if (stateRes.ok) {
+                const stateData = await stateRes.json();
+                loadingData = stateData.loading;
+                for (const m of (stateData.data || [])) {
+                    loadedMap.set(m.id, !!m.loaded);
+                }
+            }
+
+            modelSelect.innerHTML = '<option value="">Select model...</option>';
+            for (const item of catalog.data || []) {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = `${item.id} (${item.size || 'N/A'})`;
+                
+                // If model is already loaded, automatically select it and unlock chat!
+                if (loadedMap.get(item.id) || (loadingData?.loaded_model && item.name === loadingData.loaded_model)) {
+                    option.selected = true;
+                    modelReady = true;
+                    modelLoadStatus.textContent = `Loaded: ${item.id}`;
+                    modelLoadStatus.className = "status-chip bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold";
+                    modelNameDisplay.textContent = item.name.split('/').pop() || item.id;
+                }
+                modelSelect.appendChild(option);
+            }
+
+            if (loadingData?.status === 'loading' || loadingData?.status === 'queued') {
                 modelReady = false;
-                modelLoadStatus.textContent = `Loading ${formatLoadStatus(status)}`;
+                modelLoadStatus.textContent = `Loading ${formatLoadStatus(loadingData)}`;
                 loadModelBtn.disabled = true;
                 loadModelBtn.textContent = 'Loading...';
-            } else if (status.status === 'ready') {
-                modelReady = true;
-                modelLoadStatus.textContent = `Loaded: ${status.model_key || status.loaded_model || 'model'} (${status.elapsed_seconds || 0}s)`;
-                loadModelBtn.disabled = false;
-                loadModelBtn.textContent = 'Load';
-                if (modelStatusPoll) {
-                    clearInterval(modelStatusPoll);
-                    modelStatusPoll = null;
-                }
-                await fetchHealth();
-                await fetchModels();
-            } else if (status.status === 'error') {
-                modelReady = false;
-                modelLoadStatus.textContent = `Load failed: ${status.stage || 'failed'}`;
-                loadModelBtn.disabled = false;
-                loadModelBtn.textContent = 'Retry';
-                if (status.error) showError(status.error);
-                if (modelStatusPoll) {
-                    clearInterval(modelStatusPoll);
-                    modelStatusPoll = null;
+                if (!modelStatusPoll) {
+                    modelStatusPoll = setInterval(pollModelStatus, 1500);
                 }
             }
+
             updateSendButtonState();
+        } catch (err) {
+            modelLoadStatus.textContent = 'Failed to fetch models';
+        }
+    }
+
+    function formatLoadStatus(info) {
+        const stage = info?.stage ? ` - ${info.stage}` : '';
+        const progress = Number.isFinite(info?.progress) ? ` (${info.progress}%)` : '';
+        const elapsed = Number.isFinite(info?.elapsed_seconds) ? ` - ${info.elapsed_seconds}s` : '';
+        return `${info?.model_key || 'model'}${stage}${progress}${elapsed}`;
+    }
+
+    async function pollModelStatus() {
+        const apiKey = apiKeyInput.value.trim();
+        const headers = {
+            ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
+        };
+        let res = await fetch(MODEL_STATUS_URL, { headers });
+        if (!res.ok) res = await fetch('/v1/models/status', { headers });
+        if (!res.ok) return;
+        const status = await res.json();
+
+        if (status.status === 'loading' || status.status === 'queued') {
+            modelReady = false;
+            modelLoadStatus.textContent = `Loading ${formatLoadStatus(status)}`;
+            loadModelBtn.disabled = true;
+            loadModelBtn.textContent = 'Loading...';
+        } else if (status.status === 'ready' || status.loaded_model) {
+            modelReady = true;
+            const modelName = status.model_key || status.loaded_model || 'model';
+            modelLoadStatus.textContent = `Loaded: ${modelName}`;
+            modelLoadStatus.className = "status-chip bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold";
+            modelNameDisplay.textContent = modelName.split('/').pop() || modelName;
+            loadModelBtn.disabled = false;
+            loadModelBtn.textContent = 'Load Model';
+            if (modelStatusPoll) {
+                clearInterval(modelStatusPoll);
+                modelStatusPoll = null;
+            }
+            await fetchHealth();
+            await fetchModels();
+        } else if (status.status === 'error') {
+            modelReady = false;
+            modelLoadStatus.textContent = `Load failed: ${status.stage || 'failed'}`;
+            modelLoadStatus.className = "status-chip bg-rose-50 text-rose-700 border-rose-200 font-semibold";
+            loadModelBtn.disabled = false;
+            loadModelBtn.textContent = 'Retry';
+            if (status.error) showError(status.error);
+            if (modelStatusPoll) {
+                clearInterval(modelStatusPoll);
+                modelStatusPoll = null;
+            }
+        }
+        updateSendButtonState();
+    }
+
+    async function loadSelectedModel() {
+        if (!modelSelect.value) {
+            showError('Please select a model first');
+            return;
         }
 
-        async function loadSelectedModel() {
-            if (!modelSelect.value) {
-                showError('Please select a model first');
-                return;
-            }
+        const apiKey = apiKeyInput.value.trim();
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
+        };
+        const payload = {
+            model_key: modelSelect.value,
+            hf_token: hfTokenInput.value.trim() || null
+        };
 
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                'Content-Type': 'application/json',
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            const payload = {
-                model_key: modelSelect.value,
-                hf_token: hfTokenInput.value.trim() || null
-            };
-
-            let res = await fetch(MODEL_LOAD_URL, {
+        let res = await fetch(MODEL_LOAD_URL, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+        });
+        if (res.status === 404) {
+            res = await fetch('/v1/models/load', {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(payload)
             });
-            if (res.status === 404) {
-                res = await fetch('/v1/models/load', {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify(payload)
-                });
-            }
-
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.ok) {
-                showError(data.error || 'Failed to start loading model');
-                return;
-            }
-
-            modelReady = false;
-            modelLoadStatus.textContent = `Loading ${data.model_key} - queued (0%)`;
-            updateSendButtonState();
-
-            if (modelStatusPoll) clearInterval(modelStatusPoll);
-            modelStatusPoll = setInterval(pollModelStatus, 1500);
-            await pollModelStatus();
         }
 
-        updateModelAccessUI();
-        fetchHealth();
-        fetchModels();
-        fetchChats();
-        fetchLiveMetrics();
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+            showError(data.error || 'Failed to start loading model');
+            return;
+        }
+
+        modelReady = false;
+        modelLoadStatus.textContent = `Loading ${data.model_key} - queued (0%)`;
+        updateSendButtonState();
+
+        if (modelStatusPoll) clearInterval(modelStatusPoll);
+        modelStatusPoll = setInterval(pollModelStatus, 1500);
+        await pollModelStatus();
+    }
+
+    // Auto-detect and unlock active model immediately on load!
+    async function initPlayground() {
+        await fetchHealth();
+        await fetchModels();
+        await fetchChats();
+        await fetchLiveMetrics();
+        
         if (metricsPoll) clearInterval(metricsPoll);
         metricsPoll = setInterval(fetchLiveMetrics, 1500);
-
+        
         marked.setOptions({ breaks: true, gfm: true });
 
-        // Syntax highlighting injector for copy buttons
         const renderCode = (code, language) => {
             return `<pre><button class="copy-button" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('code').innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
         };
         const renderer = new marked.Renderer();
         renderer.code = renderCode;
         marked.use({ renderer });
+    }
 
-        document.querySelectorAll('.suggestion-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const text = btn.querySelector('.font-semibold').textContent + ' ' + btn.querySelector('.text-sm').textContent;
-                messageInput.value = text;
-                messageInput.focus();
-                adjustTextareaHeight();
-                messageInput.dispatchEvent(new Event('input'));
-            });
-        });
-
-        function adjustTextareaHeight() {
-            messageInput.style.height = 'auto';
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
-        }
-
-        messageInput.addEventListener('input', () => {
+    document.querySelectorAll('.suggestion-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = btn.querySelector('.font-bold').textContent + ' ' + btn.querySelector('.text-xs').textContent;
+            messageInput.value = text;
+            messageInput.focus();
             adjustTextareaHeight();
-            updateSendButtonState();
+            messageInput.dispatchEvent(new Event('input'));
         });
+    });
 
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!sendBtn.disabled && !isGenerating) sendMessage();
-            }
-        });
+    function adjustTextareaHeight() {
+        messageInput.style.height = 'auto';
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
+    }
 
-        sendBtn.addEventListener('click', sendMessage);
-        loadModelBtn.addEventListener('click', loadSelectedModel);
-        newChatBtn.addEventListener('click', async () => {
-            await createChat('New Chat');
-            modelLoadStatus.textContent = 'New chat created';
-        });
-        apiKeyInput.addEventListener('change', async () => {
-            await fetchModels();
-            await fetchChats();
-            await fetchLiveMetrics();
-        });
-        
-        stopBtn.addEventListener('click', () => {
-            if (abortController) {
-                abortController.abort();
-                isGenerating = false;
-                setUIGenerationState(false);
-                const lastMsg = chatContainer.lastElementChild;
-                if (lastMsg && lastMsg.dataset.role === 'assistant') {
-                    const contentDiv = lastMsg.querySelector('.message-content');
-                    if (contentDiv.querySelector('.typing-indicator')) {
-                         contentDiv.querySelector('.typing-indicator').remove();
-                    }
+    messageInput.addEventListener('input', () => {
+        adjustTextareaHeight();
+        updateSendButtonState();
+    });
+
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendBtn.disabled && !isGenerating) sendMessage();
+        }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    loadModelBtn.addEventListener('click', loadSelectedModel);
+    newChatBtn.addEventListener('click', async () => {
+        await createChat('New Chat');
+        modelLoadStatus.textContent = 'New chat created';
+    });
+    apiKeyInput.addEventListener('change', async () => {
+        await fetchModels();
+        await fetchChats();
+        await fetchLiveMetrics();
+    });
+    
+    stopBtn.addEventListener('click', () => {
+        if (abortController) {
+            abortController.abort();
+            isGenerating = false;
+            setUIGenerationState(false);
+            const lastMsg = chatContainer.lastElementChild;
+            if (lastMsg && lastMsg.dataset.role === 'assistant') {
+                const contentDiv = lastMsg.querySelector('.message-content');
+                if (contentDiv.querySelector('.typing-indicator')) {
+                     contentDiv.querySelector('.typing-indicator').remove();
                 }
             }
-        });
-
-        clearBtn.addEventListener('click', () => {
-            if (isGenerating) return;
-            clearChatView();
-            modelLoadStatus.textContent = 'Chat cleared';
-        });
-
-        function showError(msg) {
-            errorMsg.textContent = msg;
-            errorToast.classList.remove('opacity-0', 'translate-y-2');
-            setTimeout(() => { errorToast.classList.add('opacity-0', 'translate-y-2'); }, 4000);
         }
+    });
 
-        function stabilizePartialMarkdown(text) {
-            if (!text) return '';
-            let stable = text;
-            const fenceCount = (stable.match(/```/g) || []).length;
-            if (fenceCount % 2 === 1) {
-                stable += '\n```';
-            }
-            return stable;
+    clearBtn.addEventListener('click', () => {
+        if (isGenerating) return;
+        clearChatView();
+        modelLoadStatus.textContent = 'Chat cleared';
+    });
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorToast.classList.remove('opacity-0', 'translate-y-2');
+        setTimeout(() => { errorToast.classList.add('opacity-0', 'translate-y-2'); }, 4000);
+    }
+
+    function stabilizePartialMarkdown(text) {
+        if (!text) return '';
+        let stable = text;
+        const fenceCount = (stable.match(/```/g) || []).length;
+        if (fenceCount % 2 === 1) {
+            stable += '
+```';
         }
+        return stable;
+    }
 
-        function renderStreamContent(textDiv, content, isFinal = false) {
-            try {
-                if (isFinal) {
-                    textDiv.innerHTML = marked.parse(content || '');
-                    return;
-                }
-                const stabilized = stabilizePartialMarkdown(content || '');
-                textDiv.innerHTML = marked.parse(stabilized);
-            } catch (_) {
-                textDiv.textContent = content || '';
-            }
-        }
-
-        function parseSSEEvents(buffer) {
-            const events = [];
-            const parts = buffer.split('\n\n');
-            const remainder = parts.pop() || '';
-
-            for (const part of parts) {
-                const dataLines = [];
-                for (const line of part.split('\n')) {
-                    if (line.startsWith('data:')) {
-                        dataLines.push(line.slice(5).trimStart());
-                    }
-                }
-                if (dataLines.length) {
-                    events.push(dataLines.join('\n'));
-                }
-            }
-
-            return { events, remainder };
-        }
-        
-        function setUIGenerationState(generating) {
-            isGenerating = generating;
-            messageInput.disabled = generating;
-            
-            if (generating) {
-                stopBtn.classList.remove('hidden');
-                sendBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-            } else {
-                stopBtn.classList.add('hidden');
-                sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg>`;
-                messageInput.focus();
-            }
-
-            updateSendButtonState();
-        }
-
-        function createMessageElement(role, content) {
-            const div = document.createElement('div');
-            // Stylized bubbles handling
-            const isUser = role === 'user';
-            div.className = `flex gap-4 max-w-4xl mx-auto w-full group animate-fade-in ${isUser ? 'flex-row-reverse' : ''}`;
-            div.dataset.role = role;
-            
-            const avatar = document.createElement('div');
-            avatar.className = `w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-white text-xs shadow-sm mt-1 ${isUser ? 'bg-cyan-500 ring-2 ring-cyan-500/20' : 'bg-white border border-gray-300'}`;
-            
-            if (isUser) {
-                avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
-            } else {
-                avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.522 4.477 10 10 10s10-4.478 10-10C22 6.477 17.522 2 12 2zm1.25 15.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zm-.8-2.6a1 1 0 01-1-.87L11.4 8h1.2l-.05 6.03a1 1 0 01-.1.37z" clip-rule="evenodd" /></svg>`;
-            }
-            
-            const contentContainer = document.createElement('div');
-            // Bubble wrapping
-            contentContainer.className = `flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`;
-            
-            const textBubble = document.createElement('div');
-            textBubble.className = `px-5 py-3.5 rounded-3xl ${isUser ? 'bg-cyan-500 text-white rounded-br-sm' : 'bg-white border border-gray-200 rounded-bl-sm shadow-sm'}`;
-            
-            const textDiv = document.createElement('div');
-            textDiv.className = `message-content markdown-body text-[15px] ${isUser ? '!text-white' : 'text-gray-800'}`;
-            
-            if (isUser) {
-                textDiv.textContent = content;
-            } else if (content === '') {
-                textDiv.innerHTML = '<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-            } else {
-                textDiv.innerHTML = marked.parse(content);
-            }
-            
-            textBubble.appendChild(textDiv);
-            contentContainer.appendChild(textBubble);
-            
-            div.appendChild(avatar);
-            div.appendChild(contentContainer);
-            
-            return { element: div, textDiv };
-        }
-
-        async function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text) return;
-            if (!modelReady) {
-                showError('Load a model first');
+    function renderStreamContent(textDiv, content, isFinal = false) {
+        try {
+            if (isFinal) {
+                textDiv.innerHTML = marked.parse(content || '');
                 return;
             }
-            if (!currentChatId) {
-                const created = await createChat('New Chat');
-                if (!created) return;
+            const stabilized = stabilizePartialMarkdown(content || '');
+            textDiv.innerHTML = marked.parse(stabilized);
+        } catch (_) {
+            textDiv.textContent = content || '';
+        }
+    }
+
+    function parseSSEEvents(buffer) {
+        const events = [];
+        const parts = buffer.split('
+
+');
+        const remainder = parts.pop() || '';
+
+        for (const part of parts) {
+            const dataLines = [];
+            for (const line of part.split('
+')) {
+                if (line.startsWith('data:')) {
+                    dataLines.push(line.slice(5).trimStart());
+                }
             }
-            
-            messageInput.value = '';
-            adjustTextareaHeight();
-            emptyState.style.display = 'none';
-            setUIGenerationState(true);
-            
-            const { element: userElement } = createMessageElement('user', text);
-            chatContainer.appendChild(userElement);
-            messages.push({ role: 'user', content: text });
-            
-            const { element: botElement, textDiv: botTextDiv } = createMessageElement('assistant', '');
-            chatContainer.appendChild(botElement);
-            
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            
-            const isStreaming = streamToggle.checked;
-            abortController = new AbortController();
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                'Content-Type': 'application/json',
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify({ messages, stream: isStreaming, chat_id: currentChatId }),
-                    signal: abortController.signal
-                });
-                
-                if (!response.ok) {
-                    let errMsg = `HTTP ${response.status}`;
-                    try { errMsg = (await response.json()).detail || errMsg; } catch(e) {}
-                    botTextDiv.innerHTML = `<span class="text-rose-400 font-medium">Error: ${errMsg}</span>`;
-                    messages.pop();
-                    setUIGenerationState(false);
-                    showError(errMsg);
-                    return;
-                }
-                
-                botTextDiv.innerHTML = '';
-                let fullResponseText = "";
-                
-                if (isStreaming) {
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
-                    let sseBuffer = '';
-                    let streamFinishReason = null;
-                    
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        
-                        sseBuffer += decoder.decode(value, { stream: true });
-                        const parsed = parseSSEEvents(sseBuffer);
-                        sseBuffer = parsed.remainder;
-
-                        for (const eventData of parsed.events) {
-                            if (eventData === '[DONE]') {
-                                continue;
-                            }
-                            try {
-                                const data = JSON.parse(eventData);
-                                const deltaContent = data.choices?.[0]?.delta?.content || '';
-                                if (deltaContent) {
-                                    fullResponseText += deltaContent;
-                                    renderStreamContent(botTextDiv, fullResponseText, false);
-                                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
-                                }
-
-                                const reason = data.choices?.[0]?.finish_reason;
-                                if (reason) {
-                                    streamFinishReason = reason;
-                                }
-
-                                if (data.error?.message) {
-                                    showError(data.error.message);
-                                }
-                            } catch (e) {
-                                // keep buffering on partial/incomplete JSON frames
-                            }
-                        }
-                    }
-
-                    renderStreamContent(botTextDiv, fullResponseText, true);
-                    if (streamFinishReason === 'cancelled') {
-                        showError('Generation cancelled');
-                    } else if (streamFinishReason === 'error') {
-                        showError('Generation ended with an error');
-                    }
-                } else {
-                    const data = await response.json();
-                    fullResponseText = data.choices[0]?.message?.content || '';
-                    botTextDiv.innerHTML = marked.parse(fullResponseText);
-                }
-                messages.push({ role: 'assistant', content: fullResponseText });
-                await fetchChats();
-                await fetchLiveMetrics();
-                
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    botTextDiv.innerHTML = `<span class="text-rose-400 font-medium">Failed to connect.</span>`;
-                    showError("Connection failed");
-                    messages.pop(); 
-                }
-            } finally {
-                if (isGenerating) setUIGenerationState(false);
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            if (dataLines.length) {
+                events.push(dataLines.join('
+'));
             }
         }
-    </script>
-    </div>
-</div>
-</body>
-</html>
+
+        return { events, remainder };
+    }
+    
+    function setUIGenerationState(generating) {
+        isGenerating = generating;
+        messageInput.disabled = generating;
+        
+        if (generating) {
+            stopBtn.classList.remove('hidden');
+            sendBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+        } else {
+            stopBtn.classList.add('hidden');
+            sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg>`;
+            messageInput.focus();
+        }
+
+        updateSendButtonState();
+    }
+
+    function createMessageElement(role, content) {
+        const div = document.createElement('div');
+        const isUser = role === 'user';
+        div.className = `flex gap-4 max-w-4xl mx-auto w-full group animate-fade-in ${isUser ? 'flex-row-reverse' : ''}`;
+        div.dataset.role = role;
+        
+        const avatar = document.createElement('div');
+        avatar.className = `w-9 h-9 flex-shrink-0 rounded-xl flex items-center justify-center text-xs font-semibold shadow-sm mt-1 ${isUser ? 'bg-sky-500 text-white ring-4 ring-sky-500/10' : 'bg-white border border-slate-200 text-slate-600'}`;
+        
+        if (isUser) {
+            avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
+        } else {
+            avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-sky-500" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 5.522 4.477 10 10 10s10-4.478 10-10C22 6.477 17.522 2 12 2zm1.25 15.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zm-.8-2.6a1 1 0 01-1-.87L11.4 8h1.2l-.05 6.03a1 1 0 01-.1.37z" clip-rule="evenodd" /></svg>`;
+        }
+        
+        const contentContainer = document.createElement('div');
+        contentContainer.className = `flex flex-col max-w-[82%] ${isUser ? 'items-end' : 'items-start'}`;
+        
+        const textBubble = document.createElement('div');
+        textBubble.className = `px-5 py-3.5 rounded-2xl ${isUser ? 'bg-sky-500 text-white rounded-tr-sm shadow-md shadow-sky-500/10' : 'bg-white border border-slate-200 rounded-tl-sm shadow-sm'}`;
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = `message-content markdown-body text-[15px] ${isUser ? '!text-white' : 'text-slate-800'}`;
+        
+        if (isUser) {
+            textDiv.textContent = content;
+        } else if (content === '') {
+            textDiv.innerHTML = '<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+        } else {
+            textDiv.innerHTML = marked.parse(content);
+        }
+        
+        textBubble.appendChild(textDiv);
+        contentContainer.appendChild(textBubble);
+        
+        div.appendChild(avatar);
+        div.appendChild(contentContainer);
+        
+        return { element: div, textDiv };
+    }
+
+    async function sendMessage() {
+        const text = messageInput.value.trim();
+        if (!text) return;
+        if (!modelReady) {
+            showError('Load a model first');
+            return;
+        }
+        if (!currentChatId) {
+            const created = await createChat('New Chat');
+            if (!created) return;
+        }
+        
+        messageInput.value = '';
+        adjustTextareaHeight();
+        emptyState.style.display = 'none';
+        setUIGenerationState(true);
+        
+        const { element: userElement } = createMessageElement('user', text);
+        chatContainer.appendChild(userElement);
+        messages.push({ role: 'user', content: text });
+        
+        const { element: botElement, textDiv: botTextDiv } = createMessageElement('assistant', '');
+        chatContainer.appendChild(botElement);
+        
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        
+        const isStreaming = streamToggle.checked;
+        abortController = new AbortController();
+        const apiKey = apiKeyInput.value.trim();
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
+        };
+        
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ messages, stream: isStreaming, chat_id: currentChatId }),
+                signal: abortController.signal
+            });
+            
+            if (!response.ok) {
+                let errMsg = `HTTP ${response.status}`;
+                try { errMsg = (await response.json()).detail || errMsg; } catch(e) {}
+                botTextDiv.innerHTML = `<span class="text-rose-500 font-semibold">Error: ${errMsg}</span>`;
+                messages.pop();
+                setUIGenerationState(false);
+                showError(errMsg);
+                return;
+            }
+            
+            botTextDiv.innerHTML = '';
+            let fullResponseText = "";
+            
+            if (isStreaming) {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let sseBuffer = '';
+                let streamFinishReason = null;
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    sseBuffer += decoder.decode(value, { stream: true });
+                    const parsed = parseSSEEvents(sseBuffer);
+                    sseBuffer = parsed.remainder;
+
+                    for (const eventData of parsed.events) {
+                        if (eventData === '[DONE]') {
+                            continue;
+                        }
+                        try {
+                            const data = JSON.parse(eventData);
+                            const deltaContent = data.choices?.[0]?.delta?.content || '';
+                            if (deltaContent) {
+                                fullResponseText += deltaContent;
+                                renderStreamContent(botTextDiv, fullResponseText, false);
+                                window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
+                            }
+
+                            const reason = data.choices?.[0]?.finish_reason;
+                            if (reason) {
+                                streamFinishReason = reason;
+                            }
+
+                            if (data.error?.message) {
+                                showError(data.error.message);
+                            }
+                        } catch (e) {
+                            // keep buffering on partial frames
+                        }
+                    }
+                }
+
+                renderStreamContent(botTextDiv, fullResponseText, true);
+                if (streamFinishReason === 'cancelled') {
+                    showError('Generation cancelled');
+                } else if (streamFinishReason === 'error') {
+                    showError('Generation ended with an error');
+                }
+            } else {
+                const data = await response.json();
+                fullResponseText = data.choices[0]?.message?.content || '';
+                botTextDiv.innerHTML = marked.parse(fullResponseText);
+            }
+            messages.push({ role: 'assistant', content: fullResponseText });
+            await fetchChats();
+            await fetchLiveMetrics();
+            
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                botTextDiv.innerHTML = `<span class="text-rose-500 font-semibold">Failed to connect.</span>`;
+                showError("Connection failed");
+                messages.pop(); 
+            }
+        } finally {
+            if (isGenerating) setUIGenerationState(false);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    }
+
+    // Run initializer
+    initPlayground();
+</script>
 """
 
 @router.get("/chat", response_class=HTMLResponse)

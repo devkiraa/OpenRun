@@ -43,11 +43,14 @@ def _monitor_tunnel(process):
         if match and not found:
             url = match.group(0)
             
-            box_width = max(55, len(url) + 16)
+            api_endpoint = f"{url}/v1/chat/completions"
+            playground_url = f"{url}/chat"
+            box_width = max(55, len(api_endpoint) + 16)
             api_key = getattr(global_state.config, 'api_key', None) if global_state.config else None
             
             print("\n\033[92m" + "╭" + "─"*(box_width) + "╮\033[0m")
-            print(f"\033[92m│\033[0m 🌍 \033[1mPublic URL:\033[0m \033[96m{url.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
+            print(f"\033[92m│\033[0m 🌍 \033[1mPublic API:\033[0m \033[96m{api_endpoint.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
+            print(f"\033[92m│\033[0m 💬 \033[1mPlayground:\033[0m \033[96m{playground_url.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
             
             if api_key:
                 print(f"\033[92m│\033[0m 🔑 \033[1mAPI Key:\033[0m    \033[93m{str(api_key).ljust(box_width - 15)}\033[0m \033[92m│\033[0m")

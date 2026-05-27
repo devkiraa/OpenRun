@@ -27,11 +27,30 @@ def animate_banner(banner_text):
     if not lines:
         return
         
-    if not sys.stdout.isatty():
-        print(banner_text)
+    import os
+    is_notebook = "google.colab" in sys.modules or "COLAB_GPU" in os.environ or "ipykernel" in sys.modules
+    
+    if not sys.stdout.isatty() or is_notebook:
+        # Render a beautiful static Sunset Ember gradient banner for non-interactive / notebook environments!
+        for y, line in enumerate(lines):
+            colored_line = []
+            for x, char in enumerate(line):
+                if char.isspace():
+                    colored_line.append(char)
+                    continue
+                pos = (x / 70.0)
+                r = int(210 + 45 * math.sin(pos * 2 * math.pi))
+                g = int(100 + 70 * math.cos(pos * 2 * math.pi))
+                b = int(15 + 15 * math.sin(pos * 2 * math.pi))
+                r = max(0, min(255, r))
+                g = max(0, min(255, g))
+                b = max(0, min(255, b))
+                colored_line.append(f"\033[38;2;{r};{g};{b}m{char}")
+            print("".join(colored_line) + "\033[0m")
+            
         print(f"\033[92m🚀 OpenRun v{__version__}\033[0m")
         print("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
-        print("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n")
+        print("👨‍💻 Developed by \033[93mdevkiraa\033[0m\n")
         return
         
     num_lines = len(lines)
@@ -41,10 +60,12 @@ def animate_banner(banner_text):
     sys.stdout.flush()
     
     frame = 0
+    total_lines = 15 # default to 15 lines (1 leading newline, 8 banner lines, 6 metadata lines)
+    screen_content = ""
     try:
         while True:
             screen = []
-            screen.append("") # leading newline
+            screen.append("\033[K") # leading newline (cleared)
             
             # Subtle breathing pulse: overall brightness shifts gently between 0.85 and 1.0
             breath = 0.9 + 0.1 * math.sin(frame * 0.06)
@@ -76,13 +97,15 @@ def animate_banner(banner_text):
                     b = max(0, min(255, b))
                     
                     colored_line.append(f"\033[38;2;{r};{g};{b}m{char}")
-                screen.append("".join(colored_line) + "\033[0m")
+                screen.append("".join(colored_line) + "\033[0m\033[K")
             
-            # Static metadata
-            screen.append(f"\033[92m🚀 OpenRun v{__version__}\033[0m")
-            screen.append("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
-            screen.append("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n")
-            screen.append("\033[90m[ Press any key or Ctrl+C to exit ]\033[0m")
+            # Static metadata with explicit \033[K clear-to-end-of-line
+            screen.append(f"\033[92m🚀 OpenRun v{__version__}\033[0m\033[K")
+            screen.append("\033[90mTurn any Python AI model into an OpenAI API\033[0m\033[K")
+            screen.append("\033[K") # spacer
+            screen.append("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\033[K")
+            screen.append("\033[K") # spacer
+            screen.append("\033[90m[ Press any key or Ctrl+C to exit ]\033[0m\033[K")
             
             screen_content = "\n".join(screen) + "\n"
             sys.stdout.write(screen_content)
@@ -92,13 +115,7 @@ def animate_banner(banner_text):
             if msvcrt and msvcrt.kbhit():
                 while msvcrt.kbhit():
                     msvcrt.getch()
-                sys.stdout.write(f"\033[{screen_content.count(chr(10))}A")
-                sys.stdout.write("\n" + "\n".join(f"\033[96m{l}\033[0m" for l in lines) + "\n")
-                sys.stdout.write(f"\033[92m🚀 OpenRun v{__version__}\033[0m\n")
-                sys.stdout.write("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n\n")
-                sys.stdout.write("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n\n")
-                sys.stdout.flush()
-                break
+                raise KeyboardInterrupt
                 
             total_lines = screen_content.count("\n")
             sys.stdout.write(f"\033[{total_lines}A")
@@ -108,9 +125,108 @@ def animate_banner(banner_text):
             time.sleep(0.03) # smooth 30fps
             
     except KeyboardInterrupt:
-        sys.stdout.write(f"\033[{screen_content.count(chr(10))}B")
+        # Move cursor back to top of screen content
+        if screen_content:
+            total_lines = screen_content.count("\n")
+        sys.stdout.write(f"\033[{total_lines}A")
         sys.stdout.flush()
-        print("\n\033[93m[INFO] OpenRun banner animation stopped.\033[0m")
+        
+        # Trigger the glorious Retro CRT TV Shutdown & Snap Open Animation!
+        max_len = max(len(l) for l in lines)
+        for step in range(7):
+            shutdown_screen = []
+            shutdown_screen.append("\033[K") # leading newline (cleared)
+            
+            # Compute Sunset Ember colors for active frame at step 0
+            active_breath = 0.9 + 0.1 * math.sin(frame * 0.06)
+            active_phase = frame * 0.04
+            
+            if step == 0:
+                # Squeeze top & bottom lines, middle 6 in active orange gradient
+                shutdown_screen.append("\033[K") # top line empty/cleared
+                for y_s in range(1, 7): # lines 1 to 6
+                    colored_line = []
+                    for x_s, char in enumerate(lines[y_s]):
+                        if char.isspace():
+                            colored_line.append(char)
+                            continue
+                        pos = (x_s / 70.0) - active_phase
+                        r = int((210 + 45 * math.sin(pos * 2 * math.pi)) * active_breath)
+                        g = int((100 + 70 * math.cos(pos * 2 * math.pi)) * active_breath)
+                        b = int((15 + 15 * math.sin(pos * 2 * math.pi)) * active_breath)
+                        r = max(0, min(255, r))
+                        g = max(0, min(255, g))
+                        b = max(0, min(255, b))
+                        colored_line.append(f"\033[38;2;{r};{g};{b}m{char}")
+                    shutdown_screen.append("".join(colored_line) + "\033[0m\033[K")
+                shutdown_screen.append("\033[K") # bottom line empty/cleared
+            elif step == 1:
+                # Squeeze further, middle 4 lines in solid white
+                shutdown_screen.append("\033[K")
+                shutdown_screen.append("\033[K")
+                for y_s in range(2, 6): # lines 2 to 5
+                    shutdown_screen.append(f"\033[97m{lines[y_s]}\033[0m\033[K")
+                shutdown_screen.append("\033[K")
+                shutdown_screen.append("\033[K")
+            elif step == 2:
+                # Squeeze further, middle 2 lines in solid white
+                shutdown_screen.append("\033[K")
+                shutdown_screen.append("\033[K")
+                shutdown_screen.append("\033[K")
+                for y_s in range(3, 5): # lines 3 to 4
+                    shutdown_screen.append(f"\033[97m{lines[y_s]}\033[0m\033[K")
+                shutdown_screen.append("\033[K")
+                shutdown_screen.append("\033[K")
+                shutdown_screen.append("\033[K")
+            elif step == 3:
+                # Solid white horizontal line
+                for y_s in range(num_lines):
+                    if y_s == 3:
+                        shutdown_screen.append("\033[97m" + "─" * max_len + "\033[0m\033[K")
+                    else:
+                        shutdown_screen.append("\033[K")
+            elif step == 4:
+                # Pinch line
+                pinch_w = max_len // 3
+                pad = (max_len - pinch_w) // 2
+                for y_s in range(num_lines):
+                    if y_s == 3:
+                        shutdown_screen.append(" " * pad + "\033[97m" + "─" * pinch_w + "\033[0m" + " " * pad + "\033[K")
+                    else:
+                        shutdown_screen.append("\033[K")
+            elif step == 5:
+                # Glowing phosphor dot
+                pad = max_len // 2
+                for y_s in range(num_lines):
+                    if y_s == 3:
+                        shutdown_screen.append(" " * pad + "\033[1;97m●\033[0m" + " " * pad + "\033[K")
+                    else:
+                        shutdown_screen.append("\033[K")
+            elif step == 6:
+                # Snap open into the clean, static normal OpenRun white banner!
+                for line in lines:
+                    shutdown_screen.append(f"\033[97m{line}\033[0m\033[K")
+            
+            # Construct full-frame string dynamically
+            full_frame = []
+            full_frame.append("\n".join(shutdown_screen))
+            full_frame.append(f"\033[92m🚀 OpenRun v{__version__}\033[0m\033[K")
+            full_frame.append("\033[90mTurn any Python AI model into an OpenAI API\033[0m\033[K")
+            full_frame.append("\033[K") # spacer
+            full_frame.append("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\033[K")
+            full_frame.append("\033[K") # spacer
+            full_frame.append("\033[K") # cleared exit prompt
+            
+            frame_content = "\n".join(full_frame) + "\n"
+            sys.stdout.write(frame_content)
+            sys.stdout.flush()
+            
+            total_printed = frame_content.count("\n")
+            if step < 6:
+                sys.stdout.write(f"\033[{total_printed}A")
+                sys.stdout.flush()
+                time.sleep(0.045)
+                
     finally:
         sys.stdout.write("\033[?25h")
         sys.stdout.flush()
@@ -183,26 +299,61 @@ def main():
 
     import asyncio
     
+    def run_cleanup(command_name="Server"):
+        import os
+        import shutil
+        import sys
+        
+        print(f"\n\033[93m[INFO] OpenRun {command_name} stopping...\033[0m")
+        
+        # Detect if running in Google Colab or notebook
+        is_colab = "google.colab" in sys.modules or "COLAB_GPU" in os.environ or "ipykernel" in sys.modules
+        if is_colab:
+            print("\033[94m🧹 Detected Jupyter/Colab environment. Reclaiming system resources...\033[0m")
+            
+            # Clear Hugging Face cache to free temporary disk space
+            hf_cache_dir = os.path.expanduser("~/.cache/huggingface/hub")
+            if os.path.exists(hf_cache_dir):
+                print("\033[90m   Removing downloaded Hugging Face model files to free disk space...\033[0m")
+                try:
+                    shutil.rmtree(hf_cache_dir)
+                    print("   \033[92m✔ Temporary disk cache cleared successfully.\033[0m")
+                except Exception as e:
+                    print(f"   \033[91m⚠️ Failed to clear disk cache: {e}\033[0m")
+            
+            # Clear memory and empty PyTorch CUDA cache
+            import gc
+            gc.collect()
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    print("   \033[92m✔ GPU VRAM cache emptied successfully.\033[0m")
+            except Exception:
+                pass
+                
+        print("\033[92m✔ OpenRun stopped cleanly. RAM and VRAM are fully reclaimed.\033[0m\n")
+
     if args.command == "serve":
         try:
             from openrun.cli.serve import run_serve
             run_serve(args)
         except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
-            print("\n\033[93m[INFO] OpenRun Server stopped.\033[0m")
+            run_cleanup("Server")
             sys.exit(0)
     elif args.command == "run":
         from openrun.cli.run import run_predefined
         try:
             run_predefined(args)
         except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
-            print("\n\033[93m[INFO] OpenRun Server stopped.\033[0m")
+            run_cleanup("Interactive Runner")
             sys.exit(0)
     elif args.command == "chat":
         from openrun.cli.chat import run_chat
         try:
             run_chat(args)
         except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
-            print("\n\033[93m[INFO] OpenRun Chat stopped.\033[0m")
+            run_cleanup("Chat UI")
             sys.exit(0)
     else:
         parser.print_help()
