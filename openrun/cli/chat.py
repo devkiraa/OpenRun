@@ -16,6 +16,8 @@ def run_chat(args):
         port=args.port,
         public=public_enabled,
         api_key=args.api_key,
+        quantize=getattr(args, "quantize", None),
+        low_cpu_mem=getattr(args, "low_cpu_mem", False),
     )
     set_global_state(config=config, model=None, adapter=None)
 
@@ -30,6 +32,6 @@ def run_chat(args):
         start_tunnel(config.port)
 
     try:
-        uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="warning")
+        uvicorn.run(app, host="0.0.0.0", port=args.port, log_level="warning", timeout_keep_alive=65, loop="auto")
     except KeyboardInterrupt:
         print("\n\033[93m[INFO] Shutting down OpenRun chat server cleanly...\033[0m")

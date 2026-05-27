@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from starlette.middleware.gzip import GZipMiddleware
 from openrun.api.routes import router as api_router
 from openrun.core.state import global_state
 import importlib.metadata
@@ -18,6 +19,9 @@ logger.addHandler(handler)
 
 def create_app() -> FastAPI:
     app = FastAPI(title="OpenRun API", version=__version__)
+
+    # Compress all responses ≥500 bytes (60-80% smaller payloads over tunnels)
+    app.add_middleware(GZipMiddleware, minimum_size=500)
 
     @app.middleware("http")
     async def log_requests(request: Request, call_next):

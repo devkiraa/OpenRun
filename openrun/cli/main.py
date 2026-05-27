@@ -272,6 +272,9 @@ def main():
     serve_parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
     serve_parser.add_argument("--public", action="store_true", help="Expose server publicly via Cloudflare")
     serve_parser.add_argument("--api-key", type=str, help="Require API key for requests")
+    serve_parser.add_argument("--quantize", type=str, choices=["4bit", "8bit"], default=None, help="Enable quantization (4bit or 8bit) to reduce VRAM usage")
+    serve_parser.add_argument("--low-cpu-mem", action="store_true", help="Enable low CPU memory usage (lazy loading with memory mapping)")
+
 
     # Run command
     run_parser = subparsers.add_parser("run", help="Run a predefined model interactively or directly")
@@ -279,12 +282,18 @@ def main():
     run_parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
     run_parser.add_argument("--public", action="store_true", help="Expose server publicly via Cloudflare")
     run_parser.add_argument("--api-key", type=str, help="Require API key for requests")
+    run_parser.add_argument("--quantize", type=str, choices=["4bit", "8bit"], default=None, help="Enable quantization (4bit or 8bit) to reduce VRAM usage")
+    run_parser.add_argument("--low-cpu-mem", action="store_true", help="Enable low CPU memory usage (lazy loading with memory mapping)")
+
 
     # Chat command
     chat_parser = subparsers.add_parser("chat", help="Start ChatGPT-like web UI with dynamic model loading")
     chat_parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
     chat_parser.add_argument("--api-key", type=str, help="Require API key for requests")
     chat_parser.add_argument("--no-public", action="store_true", help="Disable Cloudflare public URL")
+    chat_parser.add_argument("--quantize", type=str, choices=["4bit", "8bit"], default=None, help="Enable quantization (4bit or 8bit) to reduce VRAM usage")
+    chat_parser.add_argument("--low-cpu-mem", action="store_true", help="Enable low CPU memory usage (lazy loading with memory mapping)")
+
 
     args = parser.parse_args()
 

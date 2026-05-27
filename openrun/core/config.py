@@ -8,3 +8,6 @@ class Config:
     port: int = 8000
     public: bool = False
     api_key: Optional[str] = None
+    quantize: Optional[str] = None  # "4bit", "8bit", or None
+    low_cpu_mem: bool = False
+

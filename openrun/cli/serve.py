@@ -19,7 +19,9 @@ def run_serve(args):
         file=args.file,
         port=args.port,
         public=args.public,
-        api_key=args.api_key
+        api_key=args.api_key,
+        quantize=getattr(args, "quantize", None),
+        low_cpu_mem=getattr(args, "low_cpu_mem", False),
     )
     set_global_state(config=config, model=None)
 
@@ -35,4 +37,4 @@ def run_serve(args):
     # Start FastAPI server
     app = create_app()
     print(f"Starting server on port {args.port}...")
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+    uvicorn.run(app, host="0.0.0.0", port=args.port, timeout_keep_alive=65, loop="auto")

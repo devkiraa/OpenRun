@@ -217,7 +217,9 @@ def run_predefined(args):
         file=None,
         port=args.port,
         public=True,
-        api_key=args.api_key
+        api_key=args.api_key,
+        quantize=getattr(args, "quantize", None),
+        low_cpu_mem=getattr(args, "low_cpu_mem", False),
     )
     set_global_state(config=config, model=None)
 
@@ -226,7 +228,7 @@ def run_predefined(args):
     if engine == "transformers":
         try:
             print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
-            adapter = HuggingFaceAdapter(model)
+            adapter = HuggingFaceAdapter(model, quantize=config.quantize, low_cpu_mem=config.low_cpu_mem)
             adapter.load()
         except RuntimeError:
             print("\033[93m⚠️ Memory limited! Switching to AirLLM engine...\033[0m")

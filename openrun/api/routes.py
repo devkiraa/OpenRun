@@ -8,10 +8,14 @@ from openrun.model.inference import generate_response, stream_response
 import time
 import uuid
 import os
+import asyncio
 import threading
 from openrun.models.registry import PREDEFINED_MODELS
 
 router = APIRouter()
+
+# Concurrency limiter: max 1 inference at a time to prevent GPU OOM crashes
+_inference_semaphore = asyncio.Semaphore(1)
 
 # HTML template for the built-in web playground
 PLAYGROUND_HTML = """
@@ -99,6 +103,112 @@ PLAYGROUND_HTML = """
             gap: 6px;
         }
 
+        /* High-End Markdown Typography for Real Chat Session Aesthetics */
+        .markdown-body {
+            line-height: 1.625;
+            font-size: 15px;
+            color: #334155;
+        }
+
+        .markdown-body p {
+            margin-top: 0;
+            margin-bottom: 0.85rem;
+        }
+
+        .markdown-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.35;
+        }
+
+        .markdown-body h1 { font-size: 1.4rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3rem; }
+        .markdown-body h2 { font-size: 1.25rem; }
+        .markdown-body h3 { font-size: 1.1rem; }
+        .markdown-body h4 { font-size: 1rem; }
+
+        .markdown-body strong {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .markdown-body ul {
+            list-style-type: disc;
+        }
+
+        .markdown-body ol {
+            list-style-type: decimal;
+        }
+
+        .markdown-body li {
+            margin-bottom: 0.35rem;
+        }
+
+        .markdown-body li::marker {
+            color: #0284c7;
+            font-weight: 600;
+        }
+
+        .markdown-body blockquote {
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            color: #64748b;
+            border-left: 4px solid #cbd5e1;
+            background: #f8fafc;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .markdown-body a {
+            color: #0284c7;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .markdown-body a:hover {
+            text-decoration: underline;
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 14px;
+        }
+
+        .markdown-body th, .markdown-body td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .markdown-body th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .markdown-body tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .markdown-body hr {
+            height: 1px;
+            background-color: #e2e8f0;
+            border: none;
+            margin: 1.5rem 0;
+        }
+
         .markdown-body pre { 
             background-color: #0f172a; 
             color: #e2e8f9; 
@@ -108,20 +218,43 @@ PLAYGROUND_HTML = """
             margin: 1rem 0; 
             position: relative; 
             border: 1px solid #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
+
         .markdown-body code { 
             background-color: #f1f5f9; 
             color: #0f766e;
             border-radius: 6px; 
             padding: 0.2em 0.4em; 
-            font-size: 90%;
-            font-family: monospace;
+            font-size: 85%;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 500;
         }
+
         .markdown-body pre code { 
             background-color: transparent; 
             color: inherit;
             padding: 0; 
             border-radius: 0;
+            font-size: 13.5px;
+            line-height: 1.5;
+        }
+
+        /* Ensure all markdown elements in user message bubbles remain beautifully readable in white */
+        .flex-row-reverse .markdown-body,
+        .flex-row-reverse .markdown-body p,
+        .flex-row-reverse .markdown-body strong,
+        .flex-row-reverse .markdown-body li,
+        .flex-row-reverse .markdown-body h1,
+        .flex-row-reverse .markdown-body h2,
+        .flex-row-reverse .markdown-body h3,
+        .flex-row-reverse .markdown-body h4 {
+            color: #ffffff !important;
+        }
+
+        .flex-row-reverse .markdown-body code {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
         }
         .message-content { 
             white-space: pre-wrap; 
@@ -1208,7 +1341,9 @@ def _load_selected_model(model_key: str, hf_token: str | None = None):
                 progress=25,
             )
             from openrun.adapters.huggingface import HuggingFaceAdapter
-            adapter = HuggingFaceAdapter(model_name)
+            quantize = state.config.quantize if state.config else None
+            low_cpu_mem = state.config.low_cpu_mem if state.config else False
+            adapter = HuggingFaceAdapter(model_name, quantize=quantize, low_cpu_mem=low_cpu_mem)
         elif engine == "airllm":
             _set_loading_state(
                 status="loading",
@@ -1457,6 +1592,33 @@ async def metrics_summary():
 
 @router.post("/v1/chat/completions", dependencies=[Depends(verify_api_key)])
 async def chat_completions(request: ChatRequest):
+    # Acquire semaphore to prevent concurrent GPU inference (OOM protection)
+    acquired = _inference_semaphore.locked()
+    if acquired:
+        # Another request is already running — check if we can wait briefly
+        try:
+            await asyncio.wait_for(_inference_semaphore.acquire(), timeout=120.0)
+        except asyncio.TimeoutError:
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "error": {
+                        "message": "Server is busy processing another request. Please retry shortly.",
+                        "type": "server_busy",
+                    }
+                },
+            )
+    else:
+        await _inference_semaphore.acquire()
+
+    try:
+        return await _run_chat_completions(request)
+    finally:
+        _inference_semaphore.release()
+
+
+async def _run_chat_completions(request: ChatRequest):
     state = get_global_state()
     
     # Precedence: config.model > request.model > "openrun"

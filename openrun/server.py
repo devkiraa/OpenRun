@@ -74,7 +74,7 @@ def serve(fn, public=False, api_key=None, port=None):
     app = create_app()
     
     def run_server():
-        uvicorn.run(app, host="0.0.0.0", port=port)
+        uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=65, loop="auto")
         
     # Start server in background thread for non-blocking mode
     thread = threading.Thread(target=run_server, daemon=True)

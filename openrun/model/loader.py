@@ -9,7 +9,7 @@ def load_model(config: Config):
         adapter = CustomAdapter(config.file)
     elif config.model:
         from openrun.adapters.huggingface import HuggingFaceAdapter
-        adapter = HuggingFaceAdapter(config.model)
+        adapter = HuggingFaceAdapter(config.model, quantize=config.quantize, low_cpu_mem=config.low_cpu_mem)
     else:
         print("Warning: Neither --model nor --file specified. Running in dummy mode.")
         return
