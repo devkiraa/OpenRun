@@ -809,8 +809,7 @@ PLAYGROUND_HTML = """
         let stable = text;
         const fenceCount = (stable.match(/```/g) || []).length;
         if (fenceCount % 2 === 1) {
-            stable += '
-```';
+            stable += '\\n```';
         }
         return stable;
     }
@@ -830,22 +829,18 @@ PLAYGROUND_HTML = """
 
     function parseSSEEvents(buffer) {
         const events = [];
-        const parts = buffer.split('
-
-');
+        const parts = buffer.split('\\n\\n');
         const remainder = parts.pop() || '';
 
         for (const part of parts) {
             const dataLines = [];
-            for (const line of part.split('
-')) {
+            for (const line of part.split('\\n')) {
                 if (line.startsWith('data:')) {
                     dataLines.push(line.slice(5).trimStart());
                 }
             }
             if (dataLines.length) {
-                events.push(dataLines.join('
-'));
+                events.push(dataLines.join('\\n'));
             }
         }
 
