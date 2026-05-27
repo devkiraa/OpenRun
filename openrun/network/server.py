@@ -39,9 +39,16 @@ def create_app() -> FastAPI:
 
     @app.get("/")
     async def root():
+        model_name = None
+        if global_state.adapter and hasattr(global_state.adapter, 'model_name'):
+            model_name = global_state.adapter.model_name
+        elif global_state.config and global_state.config.model:
+            model_name = global_state.config.model
+
         return {
             "message": "🚀 OpenRun API is running",
             "status": "online",
+            "model": model_name,
             "docs": "/docs",
             "endpoints": {
                 "chat": "/v1/chat/completions",

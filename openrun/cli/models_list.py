@@ -59,24 +59,42 @@ def list_models():
     w_vram = max_vram_len + 2
     w_engine = max_engine_len + 2
 
+    import textwrap
+
+    try:
+        terminal_columns = os.get_terminal_size().columns
+    except Exception:
+        terminal_columns = 120
+
+    left_col_width = w_key + 3 + w_size + 3 + w_speed + 3 + w_vram + 3 + w_engine
+    left_width = left_col_width + 3 # including the final ' │ '
+    desc_width = max(30, terminal_columns - left_width - 2)
+
     # Draw top border
-    border_len = w_key + w_size + w_speed + w_vram + w_engine + 16 + 65
+    border_len = left_width + desc_width
     print("\033[90m" + "─" * border_len + "\033[0m")
 
     # Table Header
     header = f"{'Model Key'.ljust(w_key)} │ {'Size'.rjust(w_size)} │ {'Speed'.rjust(w_speed)} │ {'VRAM (4-bit)'.rjust(w_vram)} │ {'Engine'.ljust(w_engine)} │ {'Best Used For / Capabilities'}"
     print(f"\033[1;4m{header}\033[0m")
 
-    # Print rows with perfect alignments
+    # Print rows with perfect alignments and dynamic text wrapping
     for key, size, speed, vram, engine, best_for in rows:
         f_key = f"\033[92m{key.ljust(w_key)}\033[0m"
         f_size = size.rjust(w_size)
         f_speed = f"\033[95m{speed.rjust(w_speed)}\033[0m"
         f_vram = f"\033[93m{vram.rjust(w_vram)}\033[0m"
         f_engine = f"\033[96m{engine.ljust(w_engine)}\033[0m"
-        f_best_for = f"\033[97m{best_for}\033[0m"
 
-        print(f"{f_key} │ {f_size} │ {f_speed} │ {f_vram} │ {f_engine} │ {f_best_for}")
+        desc_lines = textwrap.wrap(best_for, width=desc_width)
+        if not desc_lines:
+            desc_lines = ["N/A"]
+
+        print(f"{f_key} │ {f_size} │ {f_speed} │ {f_vram} │ {f_engine} │ \033[97m{desc_lines[0]}\033[0m")
+        
+        indent = " " * left_col_width
+        for extra_line in desc_lines[1:]:
+            print(f"{indent} │ \033[97m{extra_line}\033[0m")
 
     # Draw bottom border
     print("\033[90m" + "─" * border_len + "\033[0m")
