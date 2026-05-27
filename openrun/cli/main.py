@@ -39,7 +39,7 @@ def main():
         print("\n\033[96m" + banner + "\033[0m")
         print(f"\033[92m🚀 OpenRun v{__version__}\033[0m")
         print("\033[90mTurn any Python AI model into an OpenAI API\033[0m\n")
-        print("👨‍💻 Developed by \033[93mdevkiraa\033[0m\n")
+        print("👨‍💻 Developed by \033]8;;https://github.com/devkiraa\033\\\033[93mdevkiraa\033[0m\033]8;;\033\\\n")
         return
 
     parser = argparse.ArgumentParser(description="OpenRun - Target any local AI model via an OpenAI-compatible API")
