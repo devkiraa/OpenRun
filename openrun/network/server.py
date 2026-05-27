@@ -2,13 +2,8 @@ from fastapi import FastAPI, Request
 from starlette.middleware.gzip import GZipMiddleware
 from openrun.api.routes import router as api_router
 from openrun.core.state import global_state
-import importlib.metadata
+from openrun import __version__
 import logging
-
-try:
-    __version__ = importlib.metadata.version('openrun-llm')
-except importlib.metadata.PackageNotFoundError:
-    __version__ = "unknown"
 
 # Set up access logger for warnings/errors
 logger = logging.getLogger("openrun.access")
