@@ -285,7 +285,7 @@ PLAYGROUND_HTML = """
         </header>
 
         <!-- Blocking Model Gate -->
-        <section id="model-gate" class="flex-1 flex items-center justify-center p-6 bg-[#f8fafc]">
+        <section id="model-gate" class="hidden flex-1 flex items-center justify-center p-6 bg-[#f8fafc]">
             <div class="max-w-md w-full rounded-2xl border border-slate-200 bg-white shadow-xl p-8 text-center animate-fade-in">
                 <div class="h-14 w-14 mx-auto rounded-full bg-sky-50 flex items-center justify-center mb-5 border border-sky-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-sky-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -301,7 +301,7 @@ PLAYGROUND_HTML = """
         </section>
 
         <!-- Dynamic Chat Container -->
-        <main id="chat-container" class="hidden flex-1 overflow-y-auto px-6 py-8 space-y-6 scroll-smooth">
+        <main id="chat-container" class="flex-1 overflow-y-auto px-6 py-8 space-y-6 scroll-smooth">
             <!-- Welcome Screen / suggestions -->
             <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-6 animate-fade-in py-12">
                 <div class="h-16 w-16 bg-white rounded-2xl flex items-center justify-center border border-slate-200 shadow-sm">
@@ -324,7 +324,7 @@ PLAYGROUND_HTML = """
         </main>
 
         <!-- Input Footer with control blocks -->
-        <div id="chat-input-footer" class="hidden border-t border-slate-200 bg-white/95 backdrop-blur-sm px-6 py-5">
+        <div id="chat-input-footer" class="border-t border-slate-200 bg-white/95 backdrop-blur-sm px-6 py-5">
             <div class="max-w-4xl mx-auto relative">
                 
                 <!-- Error message toast -->
@@ -388,7 +388,7 @@ PLAYGROUND_HTML = """
     let messages = [];
     let isGenerating = false;
     let abortController = null;
-    let modelReady = false;
+    let modelReady = true;
     let modelStatusPoll = null;
     let currentChatId = null;
     let metricsPoll = null;
@@ -422,24 +422,15 @@ PLAYGROUND_HTML = """
     }
 
     function updateModelAccessUI() {
-        if (modelReady) {
-            modelGate.classList.add('hidden');
-            chatContainer.classList.remove('hidden');
-            chatInputFooter.classList.remove('hidden');
-            newChatBtn.disabled = false;
-            newChatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            return;
-        }
-
-        modelGate.classList.remove('hidden');
-        chatContainer.classList.add('hidden');
-        chatInputFooter.classList.add('hidden');
-        newChatBtn.disabled = true;
-        newChatBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        if (modelGate) modelGate.classList.add('hidden');
+        chatContainer.classList.remove('hidden');
+        chatInputFooter.classList.remove('hidden');
+        newChatBtn.disabled = false;
+        newChatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
     }
 
     function updateSendButtonState() {
-        sendBtn.disabled = isGenerating || !modelReady || messageInput.value.trim() === '';
+        sendBtn.disabled = isGenerating || messageInput.value.trim() === '';
         updateModelAccessUI();
     }
 
@@ -519,7 +510,6 @@ PLAYGROUND_HTML = """
 
     async function openChat(chatId) {
         if (!chatId) return;
-        if (!modelReady) return;
         const apiKey = apiKeyInput.value.trim();
         const headers = {
             ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
@@ -954,10 +944,16 @@ PLAYGROUND_HTML = """
         };
         
         try {
+            const payload = {
+                model: modelSelect.value || "openrun",
+                messages,
+                stream: isStreaming,
+                chat_id: currentChatId
+            };
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify({ messages, stream: isStreaming, chat_id: currentChatId }),
+                body: JSON.stringify(payload),
                 signal: abortController.signal
             });
             
