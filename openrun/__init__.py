@@ -1,6 +1,11 @@
 """OpenRun core package."""
 
 from .server import serve
+import importlib.metadata
 
-__version__ = "1.0.19"
+try:
+    __version__ = importlib.metadata.version("openrun-llm")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "dev"
+
 __all__ = ["serve"]
