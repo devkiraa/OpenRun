@@ -101,16 +101,11 @@ def serve(fn, public=False, api_key=None, port=None):
         print("❌ Server failed to start.")
         return
 
-    print("🚀 OpenRun running")
-    print(f"🔐 API Key: {api_key}")
-
     if public:
         start_tunnel(port)
     else:
-        print(f"🌍 URL: http://localhost:{port}")
-        
-    print("📡 Endpoint: /v1/chat/completions")
-    print("❤️ Health: /health")
+        from openrun.utils.graphics import draw_live_dashboard
+        draw_live_dashboard(port, api_key)
     
     try:
         while True:

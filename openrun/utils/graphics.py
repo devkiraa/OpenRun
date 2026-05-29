@@ -63,8 +63,33 @@ def draw_live_dashboard(port: int, api_key: str = None):
     Renders a mathematically perfect, cleanly aligned console dashboard card.
     Uses standard ASCII characters to guarantee pixel-perfect column alignment across all terminal types.
     """
+    from openrun.core.state import get_global_state
+    from urllib.parse import quote
+    
+    state = get_global_state()
+    model_name = "openrun"
+    if state:
+        if state.adapter and hasattr(state.adapter, 'model_name'):
+            model_name = state.adapter.model_name
+        elif state.config and state.config.model:
+            model_name = state.config.model
+            
+    api_base_url = f"http://localhost:{port}/v1"
     endpoint = f"http://localhost:{port}/v1/chat/completions"
     docs = f"http://localhost:{port}/docs"
+    
+    # Construct Hosted Web Chat Share Link
+    base_chat_domain = "https://openrun-web.vercel.app/"
+    params = f"?url={quote(api_base_url)}&theme=dark"
+    if model_name:
+        params += f"&model={quote(model_name)}"
+    if api_key:
+        params += f"&key={quote(api_key)}"
+    share_url = base_chat_domain + params
+    
+    # OSC 8 Clickable Link
+    click_text = "Click to Open Web Chat"
+    osc8_link = f"\033]8;;{share_url}\033\\{click_text}\033]8;;\033\\"
     
     # Theme colors (Sunset Ember / Amber Gold / Clean White)
     border = "\033[38;2;255;100;30m"
@@ -72,6 +97,7 @@ def draw_live_dashboard(port: int, api_key: str = None):
     key_color = "\033[38;2;250;130;30m"
     text = "\033[97m"
     dim = "\033[90m"
+    link_color = "\033[38;2;30;144;255m" # glowing dodger blue
     reset = "\033[0m"
     
     # Fixed 60-character inner content box width
@@ -80,6 +106,7 @@ def draw_live_dashboard(port: int, api_key: str = None):
     title_text = "  OPENRUN API RUNTIME IS LIVE & ACCEPTING REQUESTS"
     endpoint_label = "  • API Endpoint: "
     docs_label = "  • Swagger UI:   "
+    chat_label = "  • Web Chat UI:  "
     key_label = "  • API Key:      "
     
     # Pad right side to ensure perfect border alignment
@@ -103,11 +130,21 @@ def draw_live_dashboard(port: int, api_key: str = None):
     val_start = key_padded.find(key_value)
     key_row = key_padded[:val_start] + key_color_code + key_value + reset + key_padded[val_start + len(key_value):]
 
+    # Format the Web Chat row using standard spaces for length calculation, then inject OSC 8
+    chat_plain_str = chat_label + f"[{click_text}]"
+    chat_padded = chat_plain_str.ljust(box_width)
+    val_start = chat_padded.find(f"[{click_text}]")
+    chat_row = chat_padded[:val_start] + link_color + f"[{osc8_link}]" + reset + chat_padded[val_start + len(f"[{click_text}]"):]
+
     # Print dashboard box
     print(f"\n{border}┌────────────────────────────────────────────────────────────┐{reset}")
     print(f"{border}│{reset}{header}{title_row}{reset}{border}│{reset}")
     print(f"{border}├────────────────────────────────────────────────────────────┤{reset}")
     print(f"{border}│{reset}{text}{endpoint_row}{reset}{border}│{reset}")
     print(f"{border}│{reset}{text}{docs_row}{reset}{border}│{reset}")
+    print(f"{border}│{reset}{text}{chat_row}{reset}{border}│{reset}")
     print(f"{border}│{reset}{text}{key_row}{reset}{border}│{reset}")
-    print(f"{border}└────────────────────────────────────────────────────────────┘{reset}\n")
+    print(f"{border}└────────────────────────────────────────────────────────────┘{reset}")
+    
+    # Print the raw link right below so they can copy it with one click
+    print(f"👉 {text}Share / Copy Web Chat Link:{reset} {link_color}{share_url}{reset}\n")

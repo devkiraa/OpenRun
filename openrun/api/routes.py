@@ -246,7 +246,7 @@ def _load_selected_model(model_key: str, hf_token: str | None = None):
 
 @router.get("/models")
 @router.get("/v1/models")
-async def list_models():
+async def list_models(request: Request):
     state = get_global_state()
     current_model = None
     if state.adapter and hasattr(state.adapter, "model_name"):
@@ -254,8 +254,22 @@ async def list_models():
     elif state.config and state.config.model:
         current_model = state.config.model
 
+    # Dynamically build base API URL and fetch configured API key (if any)
+    base_url_str = str(request.base_url).rstrip("/")
+    api_base_url = f"{base_url_str}/v1"
+    api_key = state.config.api_key if state.config else None
+    
+    from urllib.parse import quote
+
     data = []
     for key, info in PREDEFINED_MODELS.items():
+        base_chat_domain = "https://openrun-web.vercel.app/"
+        params = f"?url={quote(api_base_url)}&theme=dark"
+        params += f"&model={quote(key)}"
+        if api_key:
+            params += f"&key={quote(api_key)}"
+        share_url = base_chat_domain + params
+
         data.append({
             "id": key,
             "object": "model",
@@ -265,6 +279,7 @@ async def list_models():
             "context": info.get("context", "N/A"),
             "speed": info.get("speed", "N/A"),
             "loaded": current_model == info.get("model"),
+            "url": share_url,
         })
 
     return {
@@ -292,14 +307,29 @@ async def model_loading_status():
 
 @router.get("/models/catalog")
 @router.get("/v1/models/catalog")
-async def model_catalog():
+async def model_catalog(request: Request):
     try:
         from openrun.models.registry import load_dynamic_models
         load_dynamic_models()
     except Exception:
         pass
+    
+    state = get_global_state()
+    base_url_str = str(request.base_url).rstrip("/")
+    api_base_url = f"{base_url_str}/v1"
+    api_key = state.config.api_key if state.config else None
+    
+    from urllib.parse import quote
+    
     data = []
     for key, info in PREDEFINED_MODELS.items():
+        base_chat_domain = "https://openrun-web.vercel.app/"
+        params = f"?url={quote(api_base_url)}&theme=dark"
+        params += f"&model={quote(key)}"
+        if api_key:
+            params += f"&key={quote(api_key)}"
+        share_url = base_chat_domain + params
+
         data.append({
             "id": key,
             "object": "model",
@@ -308,6 +338,7 @@ async def model_catalog():
             "size": info.get("size", "N/A"),
             "context": info.get("context", "N/A"),
             "speed": info.get("speed", "N/A"),
+            "url": share_url,
         })
     return {
         "object": "list",

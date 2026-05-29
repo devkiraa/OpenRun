@@ -42,22 +42,88 @@ def _monitor_tunnel(process):
         match = url_pattern.search(line)
         if match and not found:
             url = match.group(0)
-            
+            api_base_url = f"{url}/v1"
             api_endpoint = f"{url}/v1/chat/completions"
-            playground_url = f"{url}/chat"
-            box_width = max(55, len(api_endpoint) + 16)
+            docs_url = f"{url}/docs"
+            
+            # Fetch model name
+            model_name = "openrun"
+            if global_state:
+                if global_state.adapter and hasattr(global_state.adapter, 'model_name'):
+                    model_name = global_state.adapter.model_name
+                elif global_state.config and global_state.config.model:
+                    model_name = global_state.config.model
+
             api_key = getattr(global_state.config, 'api_key', None) if global_state.config else None
             
-            print("\n\033[92m" + "╭" + "─"*(box_width) + "╮\033[0m")
-            print(f"\033[92m│\033[0m 🌍 \033[1mPublic API:\033[0m \033[96m{api_endpoint.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
-            print(f"\033[92m│\033[0m 💬 \033[1mPlayground:\033[0m \033[96m{playground_url.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
+            # Construct Hosted Web Chat Share Link
+            from urllib.parse import quote
+            base_chat_domain = "https://openrun-web.vercel.app/"
+            params = f"?url={quote(api_base_url)}&theme=dark"
+            if model_name:
+                params += f"&model={quote(model_name)}"
+            if api_key:
+                params += f"&key={quote(api_key)}"
+            share_url = base_chat_domain + params
+            
+            # OSC 8 Clickable Link
+            click_text = "Click to Open Web Chat"
+            osc8_link = f"\033]8;;{share_url}\033\\{click_text}\033]8;;\033\\"
+            
+            # Theme colors (Sunset Ember / Amber Gold / Clean White)
+            border = "\033[92m" # Emerald green for public tunnel box
+            header = "\033[38;2;210;170;15m"
+            key_color = "\033[38;2;250;130;30m"
+            text = "\033[97m"
+            dim = "\033[90m"
+            link_color = "\033[38;2;30;144;255m"
+            reset = "\033[0m"
+            
+            # Calculate box width dynamically to prevent wrapping
+            box_width = max(60, len(api_endpoint) + 18)
+            
+            title_text = "  OPENRUN PUBLIC CLOUD TUNNEL IS LIVE & SECURE"
+            endpoint_label = "  • Public API:   "
+            docs_label = "  • Swagger UI:   "
+            chat_label = "  • Web Chat UI:  "
+            key_label = "  • API Key:      "
+            
+            title_row = title_text.ljust(box_width)
+            endpoint_row = (endpoint_label + api_endpoint).ljust(box_width)
+            docs_row = (docs_label + docs_url).ljust(box_width)
             
             if api_key:
-                print(f"\033[92m│\033[0m 🔑 \033[1mAPI Key:\033[0m    \033[93m{str(api_key).ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
+                masked_key = api_key
+                if len(api_key) > 20:
+                    masked_key = api_key[:8] + "..." + api_key[-8:]
+                key_value = masked_key
+                key_color_code = key_color
             else:
-                print(f"\033[92m│\033[0m 🔓 \033[1mAuth:\033[0m       \033[90m{'None (Open Access)'.ljust(box_width - 15)}\033[0m \033[92m│\033[0m")
-                
-            print("\033[92m" + "╰" + "─"*(box_width) + "╯\033[0m\n")
+                key_value = "None (Open Public Access)"
+                key_color_code = dim
+
+            key_plain_str = key_label + key_value
+            key_padded = key_plain_str.ljust(box_width)
+            val_start = key_padded.find(key_value)
+            key_row = key_padded[:val_start] + key_color_code + key_value + reset + key_padded[val_start + len(key_value):]
+
+            chat_plain_str = chat_label + f"[{click_text}]"
+            chat_padded = chat_plain_str.ljust(box_width)
+            val_start = chat_padded.find(f"[{click_text}]")
+            chat_row = chat_padded[:val_start] + link_color + f"[{osc8_link}]" + reset + chat_padded[val_start + len(f"[{click_text}]"):]
+
+            # Draw green box
+            print(f"\n{border}┌" + "─"*box_width + f"┐{reset}")
+            print(f"{border}│{reset}{header}{title_row}{reset}{border}│{reset}")
+            print(f"{border}├" + "─"*box_width + f"┤{reset}")
+            print(f"{border}│{reset}{text}{endpoint_row}{reset}{border}│{reset}")
+            print(f"{border}│{reset}{text}{docs_row}{reset}{border}│{reset}")
+            print(f"{border}│{reset}{text}{chat_row}{reset}{border}│{reset}")
+            print(f"{border}│{reset}{text}{key_row}{reset}{border}│{reset}")
+            print(f"{border}└" + "─"*box_width + f"┘{reset}")
+            
+            # Print the raw link right below so they can copy it with one click
+            print(f"👉 {text}Share / Copy Web Chat Link:{reset} {link_color}{share_url}{reset}\n")
             found = True
             # We found the URL, but we should continue reading the stream 
             # to prevent the pipe buffer from filling up and blocking the process.
