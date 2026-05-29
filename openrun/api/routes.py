@@ -20,513 +20,495 @@ _inference_semaphore = asyncio.Semaphore(1)
 # HTML template for the built-in web playground
 PLAYGROUND_HTML = """
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenRun Studio</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)",
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                    },
+                    animation: {
+                        "accordion-down": "accordion-down 0.2s ease-out",
+                        "accordion-up": "accordion-up 0.2s ease-out",
+                    },
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    
+    <!-- Styles -->
     <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+        }
+
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: #ffffff;
-            color: #0f172a;
-            letter-spacing: -0.011em;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
         }
 
-        input, select, button, textarea {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            letter-spacing: -0.011em;
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: hsl(var(--muted)); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+        /* Shadcn Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition-property: color, background-color, border-color;
+            transition-duration: 150ms;
+            height: 2.25rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .btn:disabled { opacity: 0.5; pointer-events: none; }
+        .btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+        .btn-primary:hover { background-color: hsl(var(--primary) / 0.9); }
+        .btn-outline { border: 1px solid hsl(var(--input)); background-color: hsl(var(--background)); }
+        .btn-outline:hover { background-color: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+        .btn-ghost { background-color: transparent; }
+        .btn-ghost:hover { background-color: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+        .btn-icon { height: 2.25rem; width: 2.25rem; padding: 0; }
+        
+        .input-ring:focus-within {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
         }
 
-        /* High-End Markdown Typography for Chat Session Aesthetics */
-        .markdown-body {
-            line-height: 1.625;
-            font-size: 15px;
-            color: #334155;
+        /* Markdown Prose Styles */
+        .prose p { margin-bottom: 1rem; line-height: 1.6; }
+        .prose p:last-child { margin-bottom: 0; }
+        .prose strong { font-weight: 600; color: hsl(var(--foreground)); }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 4px; }
+        .prose h1, .prose h2, .prose h3, .prose h4 { font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: hsl(var(--foreground)); }
+        .prose h1 { font-size: 1.5rem; }
+        .prose h2 { font-size: 1.25rem; border-bottom: 1px solid hsl(var(--border)); padding-bottom: 0.25rem; }
+        .prose h3 { font-size: 1.125rem; }
+        .prose blockquote { border-left: 4px solid hsl(var(--border)); padding-left: 1rem; font-style: italic; color: hsl(var(--muted-foreground)); margin-bottom: 1rem; }
+        
+        /* Inline Code */
+        .prose code:not(pre code) {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+            font-family: inherit;
         }
 
-        .markdown-body p {
-            margin-top: 0;
-            margin-bottom: 0.85rem;
-        }
-
-        .markdown-body p:last-child {
-            margin-bottom: 0;
-        }
-
-        .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
-            font-weight: 700;
-            color: #0f172a;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            line-height: 1.35;
-        }
-
-        .markdown-body h1 { font-size: 1.4rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3rem; }
-        .markdown-body h2 { font-size: 1.25rem; }
-        .markdown-body h3 { font-size: 1.1rem; }
-        .markdown-body h4 { font-size: 1rem; }
-
-        .markdown-body strong {
-            color: #0f172a;
-            font-weight: 700;
-        }
-
-        .markdown-body ul, .markdown-body ol {
-            margin-top: 0;
+        /* Code Blocks */
+        .prose pre {
+            background-color: #282c34; /* Atom One Dark bg */
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            margin-top: 1rem;
             margin-bottom: 1rem;
-            padding-left: 1.5rem;
+            overflow-x: auto;
+            position: relative;
         }
-
-        .markdown-body ul { list-style-type: disc; }
-        .markdown-body ol { list-style-type: decimal; }
-        .markdown-body li { margin-bottom: 0.35rem; }
-
-        .markdown-body li::marker {
-            color: #3b82f6;
-            font-weight: 600;
-        }
-
-        .markdown-body blockquote {
-            margin: 1rem 0;
-            padding: 0.5rem 1rem;
-            color: #64748b;
-            border-left: 4px solid #cbd5e1;
-            background: #f8fafc;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .markdown-body a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .markdown-body a:hover {
-            text-decoration: underline;
-        }
-
-        .markdown-body table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-            font-size: 14px;
-        }
-
-        .markdown-body th, .markdown-body td {
-            border: 1px solid #e2e8f0;
-            padding: 8px 12px;
-            text-align: left;
-        }
-
-        .markdown-body th {
-            background-color: #f1f5f9;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .markdown-body tr:nth-child(even) {
-            background-color: #f8fafc;
-        }
-
-        .markdown-body hr {
-            height: 1px;
-            background-color: #e2e8f0;
-            border: none;
-            margin: 1.5rem 0;
-        }
-
-        .markdown-body pre { 
-            background-color: #0f172a; 
-            color: #e2e8f9; 
-            padding: 1.25rem; 
-            border-radius: 12px; 
-            overflow-x: auto; 
-            margin: 1rem 0; 
-            position: relative; 
-            border: 1px solid #1e293b;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .markdown-body code { 
-            background-color: #f1f5f9; 
-            color: #2563eb;
-            border-radius: 6px; 
-            padding: 0.2em 0.4em; 
-            font-size: 85%;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-weight: 500;
-        }
-
-        .markdown-body pre code { 
-            background-color: transparent; 
-            color: inherit;
-            padding: 0; 
-            border-radius: 0;
-            font-size: 13.5px;
+        .prose pre code {
+            display: block;
+            padding: 1rem;
+            color: #abb2bf;
+            font-size: 0.875em;
             line-height: 1.5;
-        }
-
-        .message-content { 
-            white-space: pre-wrap; 
-            line-height: 1.7; 
-        }
-
-        .copy-button { 
-            position: absolute; 
-            top: 0.6rem; 
-            right: 0.6rem; 
-            background: #1e293b; 
-            border: 1px solid #334155; 
-            color: #94a3b8; 
-            padding: 0.3rem 0.6rem; 
-            border-radius: 6px; 
-            font-size: 0.75rem; 
-            cursor: pointer; 
-            opacity: 0; 
-            transition: all 0.2s; 
-        }
-        .markdown-body pre:hover .copy-button { 
-            opacity: 1; 
-        }
-        .copy-button:hover { 
-            background: #334155; 
-            color: #ffffff; 
-        }
-
-        /* Premium minimal scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
             background: transparent;
+            border: none;
         }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(15, 23, 42, 0.08);
-            border-radius: 9999px;
-            transition: background 0.2s;
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #21252b;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #181a1f;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(15, 23, 42, 0.2);
+        
+        .copy-code-btn {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s;
         }
+        .copy-code-btn:hover { color: #e5e7eb; }
 
-        .typing-indicator { 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 4px; 
-            height: 24px; 
-            padding: 0 4px; 
-        }
-        .dot { 
-            width: 6px; 
-            height: 6px; 
-            background-color: #94a3b8; 
-            border-radius: 50%; 
-            animation: bounce 1.4s infinite ease-in-out both; 
-        }
-        .dot:nth-child(1) { animation-delay: -0.32s; }
-        .dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce { 
-            0%, 80%, 100% { transform: scale(0); opacity: 0.4; } 
-            40% { transform: scale(1); opacity: 1; } 
-        }
+        /* Typing indicator */
+        .typing-indicator { display: inline-flex; align-items: center; gap: 4px; height: 24px; }
+        .typing-indicator .dot { width: 6px; height: 6px; background-color: hsl(var(--muted-foreground)); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
 
-        .animate-fade-in {
-            animation: fadeIn 0.25s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Sidebar collapse support */
-        #sidebar.collapsed {
-            width: 0px;
-            min-width: 0px;
-            opacity: 0;
-            overflow: hidden;
-            border-right-width: 0px;
-            pointer-events: none;
-        }
+        /* Layout */
+        .sidebar-expanded { width: 260px; min-width: 260px; }
+        .sidebar-collapsed { width: 0; min-width: 0; overflow: hidden; border: none; }
     </style>
-</head>
-<body class="h-screen antialiased flex bg-white overflow-hidden select-none">
 
-    <!-- 🤖 SIDEBAR -->
-    <aside id="sidebar" class="w-[280px] bg-white border-r border-slate-100 flex flex-col h-full transition-all duration-300 ease-in-out z-30">
-        <!-- Sidebar Header Actions -->
-        <div class="flex items-center justify-between px-5 pt-5 pb-3">
-            <button id="sidebar-toggle-btn" class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition" title="Close Sidebar">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <path d="M9 3v18" />
-                </svg>
-            </button>
-            <button id="new-chat-btn" class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition" title="New Conversation">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="h-screen w-full flex overflow-hidden selection:bg-primary/20 text-sm">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar-expanded bg-card border-r border-border flex flex-col h-full transition-all duration-300 z-30 flex-shrink-0">
+        <div class="p-4 flex items-center justify-between">
+            <h2 class="font-semibold text-base flex items-center gap-2">
+                <i data-lucide="box" class="w-5 h-5 text-primary"></i>
+                OpenRun
+            </h2>
+            <button id="sidebar-toggle-close" class="btn btn-ghost btn-icon text-muted-foreground hover:text-foreground" title="Close Sidebar">
+                <i data-lucide="panel-left-close" class="w-4 h-4"></i>
             </button>
         </div>
-
-        <!-- Search Bar -->
-        <div class="px-4 py-2">
-            <div class="relative flex items-center bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 focus-within:border-slate-300 focus-within:bg-white transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input type="text" id="sidebar-search" placeholder="Search" class="w-full bg-transparent text-sm text-slate-700 placeholder-slate-400 focus:outline-none select-text">
+        
+        <div class="px-3 pb-3">
+            <button id="new-chat-btn" class="w-full btn btn-outline justify-start gap-2 text-foreground">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                New Chat
+            </button>
+        </div>
+        
+        <div class="px-3 pb-2">
+            <div class="relative flex items-center bg-background border border-input rounded-md px-3 py-1.5 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background transition-shadow">
+                <i data-lucide="search" class="w-4 h-4 text-muted-foreground mr-2"></i>
+                <input type="text" id="sidebar-search" placeholder="Search chats..." class="w-full bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none">
             </div>
         </div>
 
-        <!-- Scrollable Conversation List -->
-        <div class="flex-1 overflow-y-auto px-2 py-3 space-y-0.5 select-text" id="chats-list">
-            <!-- Populated via Javascript, falls back to mockup items if empty -->
+        <div class="flex-1 overflow-y-auto p-3 space-y-1" id="chats-list">
+            <!-- Chats populated here -->
         </div>
 
-        <!-- Sidebar Bottom Action Controls -->
-        <div class="border-t border-slate-100 p-3 flex items-center justify-around select-none">
-            <button id="open-settings-btn" class="flex items-center justify-center gap-1.5 px-3 py-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition text-xs font-bold w-full" title="Server Configurations">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+        <div class="p-3 border-t border-border flex flex-col gap-1">
+            <button id="open-settings-btn" class="w-full btn btn-ghost justify-start gap-2 text-muted-foreground hover:text-foreground">
+                <i data-lucide="settings" class="w-4 h-4"></i>
                 Settings
             </button>
-            <button id="exit-btn" class="flex items-center justify-center gap-1.5 px-3 py-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition text-xs font-bold w-full" title="Stop OpenRun">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
+            <button id="exit-btn" class="w-full btn btn-ghost justify-start gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                <i data-lucide="power" class="w-4 h-4"></i>
                 Shutdown
             </button>
         </div>
     </aside>
 
-    <!-- 💬 MAIN CHAT AREA -->
-    <main class="flex-1 flex flex-col h-full bg-white relative min-w-0">
-        
-        <!-- Floating Expand Sidebar Button -->
-        <button id="sidebar-expand-btn" class="hidden absolute top-4 left-4 z-40 bg-white border border-slate-200/80 p-2 rounded-lg hover:bg-slate-50 hover:text-slate-800 text-slate-400 transition shadow-sm" title="Open Sidebar">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M9 3v18" />
-            </svg>
-        </button>
-
-        <!-- Top Header Navigation -->
-        <header class="h-16 border-b border-slate-100 flex items-center justify-between px-6 flex-shrink-0 relative z-20">
-            <div class="flex items-center gap-2">
-                <!-- Dropdown Model Trigger -->
-                <div class="relative">
-                    <button id="model-select-trigger" class="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/60 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-700 transition active:scale-[0.98]">
-                        <span id="active-model-logo-container" class="inline-flex items-center">
-                            <!-- Model Logo SVG -->
-                            <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
-                                <circle cx="12" cy="12" r="10" class="fill-emerald-500/10 stroke-emerald-500" stroke-width="1.5"/>
-                                <path d="M12 6v12M6 12h12M7.75 7.75l8.5 8.5M7.75 16.25l8.5-8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                            </svg>
-                        </span>
-                        <span id="active-model-name-display" class="font-sans">GPT-4o</span>
-                        <svg class="w-3 h-3 text-slate-400 caret-icon transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
+    <!-- MAIN APP -->
+    <main class="flex-1 flex flex-col h-full bg-background relative min-w-0">
+        <!-- HEADER -->
+        <header class="h-14 border-b border-border flex items-center justify-between px-4 flex-shrink-0 bg-background/95 backdrop-blur z-20">
+            <div class="flex items-center gap-3">
+                <button id="sidebar-toggle-open" class="hidden btn btn-ghost btn-icon text-muted-foreground hover:text-foreground" title="Open Sidebar">
+                    <i data-lucide="panel-left-open" class="w-4 h-4"></i>
+                </button>
+                
+                <!-- Model Selector -->
+                <div class="relative group/model">
+                    <button id="model-select-trigger" class="btn btn-outline h-9 gap-2 shadow-sm bg-card">
+                        <i data-lucide="cpu" class="w-4 h-4 text-primary"></i>
+                        <span id="active-model-name-display" class="font-medium text-foreground">Loading...</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-muted-foreground"></i>
                     </button>
-
-                    <!-- Dropdown Models Popover Card -->
-                    <div id="model-dropdown" class="hidden absolute left-0 mt-2 w-64 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50 animate-fade-in">
-                        <div class="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-2 mb-1.5">Model</div>
-                        <div class="max-h-[320px] overflow-y-auto space-y-0.5 px-1" id="dropdown-model-list">
-                            <!-- Populated dynamically from API -->
+                    
+                    <div id="model-dropdown" class="hidden absolute top-full left-0 mt-1 w-64 bg-popover border border-border rounded-md shadow-md py-1 z-50">
+                        <div class="px-3 py-1.5 text-xs font-medium text-muted-foreground border-b border-border mb-1">Models</div>
+                        <div class="max-h-[300px] overflow-y-auto px-1" id="dropdown-model-list">
+                            <!-- Models populated here -->
                         </div>
                     </div>
                 </div>
-
-                <!-- Sleek Active Server Status Display -->
-                <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 font-sans border-l border-slate-100 pl-3 ml-1 select-none">
-                    <span class="flex h-2 w-2 relative" id="live-indicator-dot">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                
+                <!-- Server Status -->
+                <div class="hidden sm:flex items-center gap-2 text-xs font-medium border-l border-border pl-3">
+                    <span class="relative flex h-2.5 w-2.5" id="live-indicator-dot">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                     </span>
-                    <span id="model-load-status" class="truncate max-w-[130px] font-bold uppercase tracking-wider text-slate-500">Engine Active</span>
-                    <span class="text-slate-200">|</span>
-                    <span id="live-metrics" class="text-slate-400 font-mono">TPS: 0.0</span>
+                    <span id="model-load-status" class="text-green-500">Active</span>
+                    <span class="text-muted-foreground mx-1">|</span>
+                    <span id="live-metrics" class="text-muted-foreground font-mono">0.0 TPS</span>
                 </div>
             </div>
-
-            <!-- Top Header Actions -->
+            
             <div class="flex items-center gap-2">
-                <button id="clear-btn" class="text-slate-400 hover:text-rose-500 p-2 rounded-lg hover:bg-slate-50 transition" title="Clear Chat History">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="btn btn-ghost btn-icon text-muted-foreground hover:text-foreground">
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+                <button id="clear-btn" class="btn btn-ghost btn-icon text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="Clear Chat">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Blocking Model Loader Gate -->
-        <section id="model-gate" class="hidden absolute inset-0 bg-white/95 backdrop-blur-sm z-30 flex items-center justify-center p-6 select-none animate-fade-in">
-            <div class="max-w-md w-full border border-slate-100 rounded-2xl bg-white shadow-2xl p-8 text-center">
-                <div class="h-12 w-12 mx-auto rounded-full bg-blue-50 flex items-center justify-center mb-4 border border-blue-100/60 text-blue-500">
-                    <svg class="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-base font-bold text-slate-800" id="gate-title">Booting Model Runtime</h3>
-                <p class="mt-2 text-xs text-slate-400 leading-relaxed" id="gate-desc">Please wait while the active model resolves, or choose a model from the header selector to load it.</p>
+        <!-- LOADER GATE -->
+        <div id="model-gate" class="hidden absolute inset-0 bg-background/80 backdrop-blur-sm z-30 flex items-center justify-center p-6">
+            <div class="max-w-md w-full border border-border rounded-xl bg-card shadow-lg p-6 flex flex-col items-center text-center">
+                <i data-lucide="loader-2" class="w-8 h-8 text-primary animate-spin mb-4"></i>
+                <h3 class="text-lg font-semibold text-foreground" id="gate-title">Starting Model Engine</h3>
+                <p class="mt-2 text-sm text-muted-foreground" id="gate-desc">Please wait while the weights are loaded into memory.</p>
             </div>
-        </section>
+        </div>
 
-        <!-- Dynamic Chat Container -->
-        <main id="chat-container" class="flex-1 overflow-y-auto px-6 py-8 space-y-6 scroll-smooth select-text bg-[#fafafa]/40">
-            <!-- Welcome Empty State -->
-            <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-5 animate-fade-in py-12 select-none">
-                <div class="h-14 w-14 bg-white rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm text-blue-500/95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
+        <!-- CHAT AREA -->
+        <div id="chat-container" class="flex-1 overflow-y-auto px-4 py-6 space-y-6 scroll-smooth flex flex-col relative w-full">
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="m-auto flex flex-col items-center justify-center max-w-2xl text-center">
+                <div class="w-16 h-16 bg-secondary text-primary rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-border">
+                    <i data-lucide="sparkles" class="w-8 h-8"></i>
                 </div>
-                <h2 class="text-xl font-bold text-slate-800 font-sans tracking-tight">What can I build for you today?</h2>
+                <h2 class="text-2xl font-semibold tracking-tight text-foreground mb-2">How can I help you today?</h2>
+                <p class="text-muted-foreground mb-8 text-sm">Powered by OpenRun Local AI Engine</p>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl w-full pt-4 px-4">
-                    <button class="suggestion-btn text-left p-4 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 hover:border-slate-300 transition group shadow-sm flex flex-col justify-between h-24">
-                        <span class="font-bold text-xs text-slate-700 group-hover:text-blue-600 transition-colors">Write a detailed layout plan</span>
-                        <span class="text-[10px] text-slate-400">for boosting SaaS user engagement strategies</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
+                    <button class="suggestion-btn btn btn-outline h-auto py-3 px-4 flex flex-col items-start gap-1 text-left bg-card hover:bg-accent/50 transition">
+                        <span class="font-medium text-sm text-foreground">Explain quantum computing</span>
+                        <span class="text-xs text-muted-foreground">in simple terms</span>
                     </button>
-                    <button class="suggestion-btn text-left p-4 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 hover:border-slate-300 transition group shadow-sm flex flex-col justify-between h-24">
-                        <span class="font-bold text-xs text-slate-700 group-hover:text-blue-600 transition-colors">Generate keyword research summary</span>
-                        <span class="text-[10px] text-slate-400">for modern dark-mode landing pages</span>
+                    <button class="suggestion-btn btn btn-outline h-auto py-3 px-4 flex flex-col items-start gap-1 text-left bg-card hover:bg-accent/50 transition">
+                        <span class="font-medium text-sm text-foreground">Write a Python script</span>
+                        <span class="text-xs text-muted-foreground">to automate daily backups</span>
+                    </button>
+                    <button class="suggestion-btn btn btn-outline h-auto py-3 px-4 flex flex-col items-start gap-1 text-left bg-card hover:bg-accent/50 transition">
+                        <span class="font-medium text-sm text-foreground">Brainstorm names</span>
+                        <span class="text-xs text-muted-foreground">for a new tech startup</span>
+                    </button>
+                    <button class="suggestion-btn btn btn-outline h-auto py-3 px-4 flex flex-col items-start gap-1 text-left bg-card hover:bg-accent/50 transition">
+                        <span class="font-medium text-sm text-foreground">Draft an email</span>
+                        <span class="text-xs text-muted-foreground">to decline a meeting politely</span>
                     </button>
                 </div>
             </div>
-        </main>
+            
+            <!-- Messages will be injected here -->
+        </div>
 
-        <!-- Input Footer Panel -->
-        <div id="chat-input-footer" class="bg-white px-6 pb-6 pt-3 flex-shrink-0 relative select-none">
-            <div class="max-w-3xl mx-auto relative">
-                
-                <!-- Error Toast Notification -->
-                <div id="error-toast" class="absolute -top-12 left-1/2 -translate-x-1/2 bg-rose-500 text-white px-4 py-2 rounded-xl text-xs shadow-xl border border-rose-400 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 font-bold z-50 translate-y-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                    <span id="error-msg"></span>
-                </div>
-                
-                <!-- Stop Generation Button -->
-                <div class="flex justify-center w-full absolute -top-14 pointer-events-none">
-                    <button id="stop-btn" class="hidden pointer-events-auto bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-700 text-xs font-bold px-4 py-2 rounded-full shadow-md transition items-center gap-2">
-                        <span class="flex h-1.5 w-1.5 relative">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
-                        </span>
-                        Stop generation
-                    </button>
-                </div>
+        <!-- INPUT FOOTER -->
+        <div class="p-4 bg-background border-t border-border relative z-20 w-full flex-shrink-0">
+            <!-- Toasts -->
+            <div id="error-toast" class="absolute -top-12 left-1/2 -translate-x-1/2 bg-destructive text-destructive-foreground px-4 py-2 rounded-md text-sm shadow-md opacity-0 pointer-events-none flex items-center gap-2 font-medium z-50 transition-all duration-300 translate-y-2">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                <span id="error-msg"></span>
+            </div>
 
-                <!-- Input Text Box -->
-                <div class="relative bg-slate-50/50 border border-slate-200/90 rounded-2xl shadow-sm focus-within:border-slate-300 focus-within:bg-white focus-within:shadow-md transition duration-200 flex items-center py-2 px-4">
-                    <textarea id="message-input" rows="1" class="w-full bg-transparent text-slate-800 placeholder-slate-400 pr-16 pl-1 py-2 focus:outline-none resize-none max-h-40 overflow-y-auto leading-relaxed text-sm select-text" placeholder="Send a message" autofocus></textarea>
+            <!-- Stop Button -->
+            <div class="absolute -top-14 left-1/2 -translate-x-1/2 z-30">
+                <button id="stop-btn" class="hidden btn bg-background border border-border text-foreground hover:bg-muted shadow-sm rounded-full h-8 px-3 gap-2 text-xs">
+                    <i data-lucide="square" class="w-3 h-3 fill-current text-destructive"></i>
+                    Stop generating
+                </button>
+            </div>
+
+            <div class="max-w-4xl mx-auto relative">
+                <div class="input-ring bg-card border border-input rounded-xl shadow-sm flex flex-col transition-shadow">
+                    <textarea id="message-input" rows="1" class="w-full bg-transparent text-foreground placeholder:text-muted-foreground px-4 py-3 focus:outline-none resize-none max-h-48 overflow-y-auto text-sm" placeholder="Message OpenRun..." autofocus></textarea>
                     
-                    <div class="absolute right-3 flex items-center gap-2">
-                        <!-- Stream Checkbox -->
-                        <label class="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold text-slate-400 hover:text-slate-600 cursor-pointer select-none bg-slate-100 rounded-lg transition border border-slate-200/40">
-                            <input type="checkbox" id="stream-toggle" class="rounded border-slate-300 text-blue-500 focus:ring-blue-500 cursor-pointer w-3 h-3" checked>
-                            Stream
-                        </label>
-                        <button id="send-btn" class="bg-blue-600 hover:bg-blue-500 text-white h-8 w-8 rounded-xl flex items-center justify-center transition disabled:opacity-30 disabled:hover:bg-blue-600 disabled:cursor-not-allowed transform active:scale-95 shadow-md shadow-blue-500/10" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
-                            </svg>
+                    <div class="flex items-center justify-between px-3 pb-2 pt-1">
+                        <div class="flex items-center gap-2">
+                            <label class="flex items-center gap-1.5 cursor-pointer select-none text-xs text-muted-foreground hover:text-foreground transition">
+                                <input type="checkbox" id="stream-toggle" class="rounded border-input text-primary focus:ring-primary w-3.5 h-3.5 bg-background" checked>
+                                Stream
+                            </label>
+                        </div>
+                        <button id="send-btn" class="btn btn-primary h-8 w-8 p-0 rounded-lg flex items-center justify-center transition-all disabled:opacity-50 disabled:bg-primary" disabled>
+                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
-                
-                <div class="text-center mt-3 text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-none">
-                    AI models can make mistakes. Check important info.
+                <div class="text-center mt-2 text-[10px] text-muted-foreground">
+                    AI models can make mistakes. Verify important information.
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- ⚙️ CONFIGURATIONS MODAL -->
-    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-sm w-full p-6 animate-fade-in flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Server Configurations
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-card rounded-lg border border-border shadow-lg max-w-sm w-full animate-accordion-down flex flex-col">
+            <div class="p-4 border-b border-border flex justify-between items-center">
+                <h3 class="text-base font-semibold flex items-center gap-2 text-foreground">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    Settings
                 </h3>
-                <button id="close-settings-modal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                <button id="close-settings-modal" class="btn btn-ghost btn-icon h-7 w-7 text-muted-foreground hover:text-foreground">
+                    <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
             
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Hugging Face Token</label>
-                    <input type="password" id="hf-token" placeholder="Optional token..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3.5 py-2.5 focus:border-blue-500 focus:bg-white outline-none font-mono transition select-text">
+            <div class="p-4 space-y-4">
+                <div class="space-y-1.5">
+                    <label class="text-sm font-medium text-foreground">Hugging Face Token</label>
+                    <input type="password" id="hf-token" placeholder="hf_..." class="w-full bg-background border border-input text-foreground text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring">
+                    <p class="text-xs text-muted-foreground">Required for gated models like Llama-3.</p>
                 </div>
 
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">API Password/Key</label>
-                    <input type="password" id="api-key" placeholder="Optional auth key..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3.5 py-2.5 focus:border-blue-500 focus:bg-white outline-none font-mono transition select-text">
+                <div class="space-y-1.5">
+                    <label class="text-sm font-medium text-foreground">API Key</label>
+                    <input type="password" id="api-key" placeholder="sk-..." class="w-full bg-background border border-input text-foreground text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring">
+                    <p class="text-xs text-muted-foreground">If your OpenRun server requires authentication.</p>
                 </div>
                 
-                <div class="text-[10px] text-slate-400 leading-normal bg-slate-50 rounded-xl p-3 border border-slate-100 font-medium select-none">
-                    🔒 Saved credentials will be saved in your browser and sent with server requests automatically.
+                <div class="bg-muted p-3 rounded-md text-xs text-muted-foreground flex items-start gap-2">
+                    <i data-lucide="info" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                    <p>Credentials are stored securely in your browser's local storage.</p>
                 </div>
-
-                <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3 rounded-xl transition active:scale-[0.98] shadow-lg shadow-blue-500/10">
-                    Apply Configurations
-                </button>
+            </div>
+            
+            <div class="p-4 border-t border-border flex justify-end">
+                <button id="save-settings-btn" class="btn btn-primary">Save Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- 📜 SCRIPTS -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- SCRIPTS -->
     <script>
+        // Icons Initialization
+        lucide.createIcons();
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Initial Theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            if (html.classList.contains('dark')) {
+                localStorage.theme = 'dark';
+            } else {
+                localStorage.theme = 'light';
+            }
+        });
+
+        // Config & State
         const API_URL = '/v1/chat/completions';
         const HEALTH_URL = '/';
-        const MODELS_URL = '/models';
         const MODELS_CATALOG_URL = '/models/catalog';
         const MODEL_STATUS_URL = '/models/status';
         const MODEL_LOAD_URL = '/models/load';
         const CHATS_URL = '/v1/chats';
         const METRICS_LIVE_URL = '/v1/metrics/live';
-
-        // Brand Logos Collection
-        const BRAND_LOGOS = {
-            deepseek: `<svg class="w-4 h-4 text-emerald-600 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" class="fill-emerald-500/10 stroke-emerald-500" stroke-width="1.5"/><path d="M12 6v12M6 12h12M7.75 7.75l8.5 8.5M7.75 16.25l8.5-8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-            llama: `<svg class="w-4 h-4 text-blue-500 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" class="fill-blue-500/10 stroke-blue-500" stroke-width="1.5"/><path d="M8 10a2 2 0 100 4 2 2 0 000-4zm8 0a2 2 0 100 4 2 2 0 000-4z"/></svg>`,
-            qwen: `<svg class="w-4 h-4 text-teal-600 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" class="fill-teal-500/10 stroke-teal-500" stroke-width="1.5"/><path d="M12 9a3 3 0 110 6 3 3 0 010-6zm0-2a5 5 0 100 10 5 5 0 000-10z" fill-rule="evenodd" clip-rule="evenodd"/></svg>`,
-            gemma: `<svg class="w-4 h-4 text-indigo-500 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" class="fill-indigo-500/10 stroke-indigo-500" stroke-width="1.5"/><path d="M12 6c0 3.3 2.7 6 6 6-3.3 0-6 2.7-6 6 0-3.3-2.7-6-6-6 3.3 0 6-2.7 6-6z"/></svg>`,
-            phi: `<svg class="w-4 h-4 text-purple-500 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" class="fill-purple-500/10 stroke-purple-500" stroke-width="1.5"/><path d="M12 5c0 3.8 3.2 7 7 7-3.8 0-7 3.2-7 7 0-3.8-3.2-7-7-7 3.8 0 7-3.2 7-7z" /></svg>`,
-            mistral: `<svg class="w-4 h-4 text-amber-500 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" class="fill-amber-500/10 stroke-amber-500" stroke-width="1.5"/><path d="M7 8h2.5l2.5 4.5L14.5 8H17v8h-2.5v-4.5L12 16l-2.5-4.5V16H7z"/></svg>`,
-            star: `<svg class="w-4 h-4 text-orange-500 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" class="fill-orange-500/10 stroke-orange-500" stroke-width="1.5"/><path d="M12 7l1.2 3.2 3.3.3-2.5 2.2.8 3.3-2.8-2-2.8 2 .8-3.3-2.5-2.2 3.3-.3z"/></svg>`,
-            custom: `<svg class="w-4 h-4 text-slate-500 mr-1.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/></svg>`
-        };
-
-        function getModelBrandInfo(modelId) {
-            const id = modelId.toLowerCase();
-            if (id.includes('deepseek')) return { brand: 'DeepSeek', logo: BRAND_LOGOS.deepseek };
-            if (id.includes('llama')) return { brand: 'Meta Llama', logo: BRAND_LOGOS.llama };
-            if (id.includes('qwen')) return { brand: 'Qwen', logo: BRAND_LOGOS.qwen };
-            if (id.includes('gemma')) return { brand: 'Google Gemma', logo: BRAND_LOGOS.gemma };
-            if (id.includes('phi')) return { brand: 'Microsoft Phi', logo: BRAND_LOGOS.phi };
-            if (id.includes('mistral')) return { brand: 'Mistral', logo: BRAND_LOGOS.mistral };
-            if (id.includes('star') || id.includes('coder')) return { brand: 'StarCoder', logo: BRAND_LOGOS.star };
-            return { brand: 'AI Model', logo: BRAND_LOGOS.custom };
-        }
 
         let catalogModels = [];
         let messages = [];
@@ -543,7 +525,6 @@ PLAYGROUND_HTML = """
         const modelGate = document.getElementById('model-gate');
         const gateTitle = document.getElementById('gate-title');
         const gateDesc = document.getElementById('gate-desc');
-        const chatInputFooter = document.getElementById('chat-input-footer');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
         const stopBtn = document.getElementById('stop-btn');
@@ -559,14 +540,13 @@ PLAYGROUND_HTML = """
         const errorToast = document.getElementById('error-toast');
         const errorMsg = document.getElementById('error-msg');
         
-        // Custom redesigned selectors
+        // Custom UI selectors
         const sidebar = document.getElementById('sidebar');
-        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-        const sidebarExpandBtn = document.getElementById('sidebar-expand-btn');
+        const sidebarToggleClose = document.getElementById('sidebar-toggle-close');
+        const sidebarToggleOpen = document.getElementById('sidebar-toggle-open');
         const sidebarSearch = document.getElementById('sidebar-search');
         const modelSelectTrigger = document.getElementById('model-select-trigger');
         const modelDropdown = document.getElementById('model-dropdown');
-        const activeModelLogoContainer = document.getElementById('active-model-logo-container');
         const activeModelNameDisplay = document.getElementById('active-model-name-display');
         const openSettingsBtn = document.getElementById('open-settings-btn');
         const closeSettingsModal = document.getElementById('close-settings-modal');
@@ -574,45 +554,43 @@ PLAYGROUND_HTML = """
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const exitBtn = document.getElementById('exit-btn');
 
-        // Initialize localStorage credentials
-        if (localStorage.getItem('openrun_api_key')) {
-            apiKeyInput.value = localStorage.getItem('openrun_api_key');
-        }
-        if (localStorage.getItem('openrun_hf_token')) {
-            hfTokenInput.value = localStorage.getItem('openrun_hf_token');
-        }
+        // Init localStorage credentials
+        if (localStorage.getItem('openrun_api_key')) apiKeyInput.value = localStorage.getItem('openrun_api_key');
+        if (localStorage.getItem('openrun_hf_token')) hfTokenInput.value = localStorage.getItem('openrun_hf_token');
 
-        // Toggle Sidebar
-        sidebarToggleBtn.addEventListener('click', () => {
-            sidebar.classList.add('collapsed');
-            sidebarExpandBtn.classList.remove('hidden');
+        // Sidebar Toggle
+        sidebarToggleClose.addEventListener('click', () => {
+            sidebar.classList.remove('sidebar-expanded');
+            sidebar.classList.add('sidebar-collapsed');
+            sidebarToggleOpen.classList.remove('hidden');
         });
-        sidebarExpandBtn.addEventListener('click', () => {
-            sidebar.classList.remove('collapsed');
-            sidebarExpandBtn.classList.add('hidden');
+        sidebarToggleOpen.addEventListener('click', () => {
+            sidebar.classList.remove('sidebar-collapsed');
+            sidebar.classList.add('sidebar-expanded');
+            sidebarToggleOpen.classList.add('hidden');
         });
 
-        // Toggle Model Dropdown Popover
+        // Model Dropdown
         modelSelectTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
             modelDropdown.classList.toggle('hidden');
-            modelSelectTrigger.querySelector('.caret-icon').classList.toggle('rotate-180');
+            const icon = modelSelectTrigger.querySelector('[data-lucide="chevron-down"]');
+            if (modelDropdown.classList.contains('hidden')) {
+                icon.style.transform = '';
+            } else {
+                icon.style.transform = 'rotate(180deg)';
+            }
         });
-
         document.addEventListener('click', (e) => {
             if (!modelDropdown.contains(e.target) && !modelSelectTrigger.contains(e.target)) {
                 modelDropdown.classList.add('hidden');
-                modelSelectTrigger.querySelector('.caret-icon').classList.remove('rotate-180');
+                modelSelectTrigger.querySelector('[data-lucide="chevron-down"]').style.transform = '';
             }
         });
 
-        // Toggle Settings Modal
-        openSettingsBtn.addEventListener('click', () => {
-            settingsModal.classList.remove('hidden');
-        });
-        closeSettingsModal.addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-        });
+        // Settings Modal
+        openSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+        closeSettingsModal.addEventListener('click', () => settingsModal.classList.add('hidden'));
         saveSettingsBtn.addEventListener('click', () => {
             localStorage.setItem('openrun_api_key', apiKeyInput.value.trim());
             localStorage.setItem('openrun_hf_token', hfTokenInput.value.trim());
@@ -627,20 +605,88 @@ PLAYGROUND_HTML = """
             }
         });
 
+        // Setup Markdown Parser & Highlighter
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            }
+        });
+        
+        // Custom Renderer for Code Blocks
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            const validLanguage = hljs.getLanguage(language) ? language : 'plaintext';
+            const highlighted = hljs.highlight(code, { language: validLanguage }).value;
+            
+            return \`
+            <div class="my-4 rounded-md overflow-hidden border border-border bg-[#282c34] font-mono text-sm shadow-sm">
+                <div class="code-header flex justify-between items-center px-3 py-1.5 bg-[#21252b] border-b border-[#181a1f] text-xs text-[#9ca3af]">
+                    <span class="uppercase tracking-wider font-semibold">\${validLanguage}</span>
+                    <button class="copy-code-btn flex items-center gap-1.5 hover:text-white transition-colors" onclick="copyCodeText(this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <div class="p-3 overflow-x-auto">
+                    <code class="hljs language-\${validLanguage}" style="background:transparent; padding:0;">\${highlighted}</code>
+                </div>
+            </div>\`;
+        };
+        marked.use({ renderer });
+
+        window.copyCodeText = function(btn) {
+            const preContainer = btn.closest('.code-header').nextElementSibling;
+            const text = preContainer.querySelector('code').innerText;
+            navigator.clipboard.writeText(text);
+            const span = btn.querySelector('span');
+            span.innerText = 'Copied!';
+            setTimeout(() => span.innerText = 'Copy', 2000);
+        };
+
+        // Render Markdown securely
+        function renderMarkdown(content) {
+            if (!content) return '';
+            try {
+                // Stabilize incomplete code blocks during streaming
+                const fenceCount = (content.match(/\`\`\`/g) || []).length;
+                let stableContent = content;
+                if (fenceCount % 2 === 1) {
+                    stableContent += '\\n\`\`\`';
+                }
+                const rawHtml = marked.parse(stableContent);
+                // Sanitize HTML
+                return DOMPurify.sanitize(rawHtml, {
+                    ADD_ATTR: ['target', 'onclick', 'data-lucide', 'class', 'style'],
+                    ADD_TAGS: ['svg', 'path', 'rect', 'circle', 'line', 'polyline', 'polygon']
+                });
+            } catch (e) {
+                console.error("Markdown parse error:", e);
+                return content;
+            }
+        }
+
+        // Fetch API
+        async function fetchAPI(url, options = {}) {
+            const apiKey = apiKeyInput.value.trim();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(apiKey ? {'Authorization': \`Bearer \${apiKey}\`} : {}),
+                ...options.headers
+            };
+            return fetch(url, { ...options, headers });
+        }
+
         async function fetchModels() {
             try {
-                const apiKey = apiKeyInput.value.trim();
-                const headers = {
-                    ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-                };
-                const res = await fetch(MODELS_CATALOG_URL, { headers });
+                const res = await fetchAPI(MODELS_CATALOG_URL);
                 if (!res.ok) return;
                 const data = await res.json();
                 catalogModels = data.data || [];
                 renderModelsDropdown();
-            } catch (err) {
-                console.error("Failed to fetch models", err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         function renderModelsDropdown() {
@@ -648,48 +694,26 @@ PLAYGROUND_HTML = """
             dropdown.innerHTML = '';
             
             if (catalogModels.length === 0) {
-                dropdown.innerHTML = `<div class="px-4 py-3 text-center text-xs font-semibold text-slate-400 select-none">No models available</div>`;
+                dropdown.innerHTML = \`<div class="px-3 py-2 text-center text-xs text-muted-foreground">No models</div>\`;
                 return;
             }
 
             catalogModels.forEach(model => {
-                const brandInfo = getModelBrandInfo(model.id);
-                const option = document.createElement('div');
-                option.className = 'model-option flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 group transition';
-                option.setAttribute('data-model-id', model.id);
+                const option = document.createElement('button');
+                option.className = 'w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center justify-between transition group';
                 
-                option.innerHTML = `
-                    <div class="flex items-center min-w-0 pointer-events-none">
-                        ${brandInfo.logo}
-                        <span class="text-xs font-bold text-slate-700 truncate">${model.id}</span>
+                option.innerHTML = \`
+                    <div class="flex flex-col">
+                        <span class="font-medium">\${model.id}</span>
+                        <span class="text-[10px] text-muted-foreground">\${model.size || 'N/A'} • \${model.engine || 'N/A'}</span>
                     </div>
-                    <div class="relative group\\/tooltip inline-flex items-center">
-                        <svg class="w-3.5 h-3.5 text-slate-300 hover:text-slate-500 transition cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 16v-4m0-4h.01"/>
-                        </svg>
-                        <div class="absolute bottom-full mb-2 right-0 bg-[#1e293b] text-white text-[10px] font-medium rounded-lg px-2.5 py-1.5 shadow-lg opacity-0 group-hover\\/tooltip:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-normal w-52 z-50 leading-normal">
-                            <div class="font-bold text-slate-200 truncate mb-0.5">${model.name || model.id}</div>
-                            <div class="text-[9px] text-slate-400">Size: ${model.size || 'N/A'} • Context: ${model.context || 'N/A'}</div>
-                            <div class="text-[9px] text-slate-400 mt-0.5">Engine: ${model.engine || 'N/A'} • Speed: ${model.speed || 'N/A'}</div>
-                            <div class="absolute top-full right-1.5 -mt-1 border-4 border-transparent border-t-[#1e293b]"></div>
-                        </div>
-                    </div>
-                `;
+                \`;
                 
-                option.addEventListener('click', async (e) => {
-                    // Avoid tooltip triggers
-                    if (e.target.closest('circle') || e.target.closest('path') || e.target.closest('.group\\\\/tooltip')) {
-                        return;
-                    }
-                    
+                option.addEventListener('click', async () => {
                     activeModelId = model.id;
                     activeModelNameDisplay.textContent = model.id;
-                    activeModelLogoContainer.innerHTML = brandInfo.logo;
-                    
                     modelDropdown.classList.add('hidden');
-                    modelSelectTrigger.querySelector('.caret-icon').classList.remove('rotate-180');
-
+                    modelSelectTrigger.querySelector('[data-lucide="chevron-down"]').style.transform = '';
                     await loadSelectedModelByName(model.id);
                 });
                 
@@ -697,12 +721,165 @@ PLAYGROUND_HTML = """
             });
         }
 
-        function updateModelAccessUI() {
-            modelGate.classList.add('hidden');
+        async function fetchHealth() {
+            try {
+                const res = await fetch(HEALTH_URL);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.model) {
+                        modelReady = true;
+                        modelLoadStatus.textContent = 'Active';
+                        modelLoadStatus.className = 'text-green-500 font-medium';
+                        document.getElementById('live-indicator-dot').classList.remove('hidden');
+                        
+                        // Select model in UI
+                        const activeKey = data.model;
+                        const modelBaseName = activeKey.split('/').pop() || activeKey;
+                        activeModelId = activeKey;
+                        activeModelNameDisplay.textContent = modelBaseName;
+                        modelGate.classList.add('hidden');
+                    } else {
+                        modelReady = false;
+                        modelLoadStatus.textContent = 'No Model';
+                        modelLoadStatus.className = 'text-amber-500 font-medium';
+                        showGateLoader("Active Service", "No LLM loaded. Please select one from the dropdown.");
+                    }
+                }
+            } catch (e) {
+                modelReady = false;
+                modelLoadStatus.textContent = 'Offline';
+                modelLoadStatus.className = 'text-destructive font-medium';
+                document.getElementById('live-indicator-dot').classList.add('hidden');
+                showGateLoader("Offline", "Local server is unreachable.");
+            }
+            updateSendButtonState();
         }
 
-        function updateSendButtonState() {
-            sendBtn.disabled = isGenerating || messageInput.value.trim() === '' || !modelReady;
+        function showGateLoader(title, desc) {
+            modelGate.classList.remove('hidden');
+            gateTitle.textContent = title;
+            gateDesc.textContent = desc;
+        }
+
+        async function loadSelectedModelByName(modelId) {
+            modelReady = false;
+            modelLoadStatus.textContent = 'Loading...';
+            modelLoadStatus.className = 'text-primary font-medium animate-pulse';
+            
+            showGateLoader("Loading weights", \`Loading \${modelId} into memory...\`);
+            updateSendButtonState();
+
+            const payload = {
+                model_key: modelId,
+                hf_token: hfTokenInput.value.trim() || null
+            };
+
+            let res = await fetchAPI(MODEL_LOAD_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(() => null);
+            if (!res || res.status === 404) {
+                res = await fetchAPI('/v1/models/load', { method: 'POST', body: JSON.stringify(payload) }).catch(() => null);
+            }
+
+            if (!res || !res.ok) {
+                showError('Failed to load model.');
+                fetchHealth();
+                return;
+            }
+
+            if (modelStatusPoll) clearInterval(modelStatusPoll);
+            modelStatusPoll = setInterval(pollModelStatus, 1500);
+            await pollModelStatus();
+        }
+
+        async function pollModelStatus() {
+            let res = await fetchAPI(MODEL_STATUS_URL).catch(() => null);
+            if (!res || !res.ok) res = await fetchAPI('/v1/models/status').catch(() => null);
+            if (!res || !res.ok) return;
+            const status = await res.json();
+
+            if (status.status === 'loading' || status.status === 'queued') {
+                modelReady = false;
+                const prog = status.progress ? \`(\${status.progress}%)\` : '';
+                modelLoadStatus.textContent = \`Loading \${prog}\`;
+                showGateLoader("Loading model", \`\${status.message || 'Queued'} \${prog}\`);
+            } else if (status.status === 'ready' || status.loaded_model) {
+                modelReady = true;
+                modelLoadStatus.textContent = 'Active';
+                modelLoadStatus.className = 'text-green-500 font-medium';
+                if (modelStatusPoll) { clearInterval(modelStatusPoll); modelStatusPoll = null; }
+                modelGate.classList.add('hidden');
+                await fetchHealth();
+            } else if (status.status === 'error') {
+                modelReady = false;
+                modelLoadStatus.textContent = 'Error';
+                modelLoadStatus.className = 'text-destructive font-medium';
+                showGateLoader("Load Failed", status.error || 'Failed to load weights.');
+                if (modelStatusPoll) { clearInterval(modelStatusPoll); modelStatusPoll = null; }
+            }
+            updateSendButtonState();
+        }
+
+        // Chat Management
+        function renderEmptyChats() {
+            chatsList.innerHTML = \`
+                <div class="py-6 text-center text-muted-foreground flex flex-col items-center">
+                    <i data-lucide="message-square-off" class="w-6 h-6 mb-2 opacity-50"></i>
+                    <p class="text-xs">No chats yet</p>
+                </div>
+            \`;
+            lucide.createIcons();
+        }
+
+        async function fetchChats() {
+            try {
+                const res = await fetchAPI(CHATS_URL);
+                if (!res.ok) { renderEmptyChats(); return; }
+                const data = await res.json();
+                const chats = data.data || [];
+
+                chatsList.innerHTML = '';
+                if (chats.length === 0) { renderEmptyChats(); return; }
+
+                chats.forEach(chat => {
+                    const isActive = chat.id === currentChatId;
+                    const btn = document.createElement('div');
+                    btn.className = \`group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition text-sm \${isActive ? 'bg-accent text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}\`;
+                    
+                    btn.innerHTML = \`
+                        <div class="flex items-center gap-2 truncate">
+                            <i data-lucide="message-square" class="w-4 h-4 flex-shrink-0"></i>
+                            <span class="truncate">\${chat.title || 'Untitled'}</span>
+                        </div>
+                    \`;
+                    btn.addEventListener('click', () => openChat(chat.id));
+                    chatsList.appendChild(btn);
+                });
+                lucide.createIcons();
+                
+                if (!currentChatId && chats.length) {
+                    await openChat(chats[0].id);
+                }
+            } catch (err) { renderEmptyChats(); }
+        }
+
+        async function createChat(title = 'New Chat') {
+            const res = await fetchAPI(CHATS_URL, { method: 'POST', body: JSON.stringify({ title }) });
+            if (!res.ok) return null;
+            const data = await res.json();
+            currentChatId = data.chat?.id || null;
+            clearChatView();
+            await fetchChats();
+            return currentChatId;
+        }
+
+        async function openChat(chatId) {
+            if (!chatId) return;
+            const res = await fetchAPI(\`\${CHATS_URL}/\${chatId}\`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data.ok) { showError('Failed to open chat'); return; }
+            currentChatId = chatId;
+            renderExistingMessages(data.chat?.messages || []);
+            await fetchChats();
         }
 
         function clearChatView() {
@@ -717,296 +894,28 @@ PLAYGROUND_HTML = """
                 const { element } = createMessageElement(msg.role, msg.content || '');
                 chatContainer.appendChild(element);
             }
-            if ((chatMessages || []).length > 0) {
-                emptyState.style.display = 'none';
-            }
+            if ((chatMessages || []).length > 0) emptyState.style.display = 'none';
             chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
         }
 
-        function renderEmptyChats() {
-            chatsList.innerHTML = `
-                <div class="px-4 py-8 text-center text-slate-400 select-none select-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    <div class="text-[11px] font-bold uppercase tracking-wider text-slate-300">No chats yet</div>
-                    <div class="text-[10px] text-slate-400/80 mt-1">Start a conversation to begin</div>
-                </div>
-            `;
-        }
-
-        async function fetchChats() {
-            try {
-                const apiKey = apiKeyInput.value.trim();
-                const headers = {
-                    ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-                };
-                const res = await fetch(CHATS_URL, { headers });
-                if (!res.ok) {
-                    renderEmptyChats();
-                    return;
-                }
-                const data = await res.json();
-                const chats = data.data || [];
-
-                chatsList.innerHTML = '';
-                if (chats.length === 0) {
-                    renderEmptyChats();
-                    return;
-                }
-
-                chats.forEach(chat => {
-                    const btn = document.createElement('div');
-                    const isActive = chat.id === currentChatId;
-                    btn.className = `sidebar-item flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition select-none text-xs font-semibold ${isActive ? 'bg-slate-100 text-slate-800' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`;
-                    btn.innerHTML = `
-                        <div class="flex items-center min-w-0 flex-1 gap-2 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                            <span class="truncate pr-1">${chat.title || 'Untitled Chat'}</span>
-                        </div>
-                    `;
-                    btn.addEventListener('click', () => openChat(chat.id));
-                    chatsList.appendChild(btn);
-                });
-
-                if (!currentChatId && chats.length) {
-                    await openChat(chats[0].id);
-                }
-            } catch (err) {
-                renderEmptyChats();
-            }
-        }
-
-        async function createChat(title = 'New Chat') {
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                'Content-Type': 'application/json',
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            const res = await fetch(CHATS_URL, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ title })
-            });
-            if (!res.ok) {
-                return null;
-            }
-            const data = await res.json();
-            const chat = data.chat;
-            currentChatId = chat?.id || null;
-            clearChatView();
-            await fetchChats();
-            return currentChatId;
-        }
-
-        async function openChat(chatId) {
-            if (!chatId) return;
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            const res = await fetch(`${CHATS_URL}/${chatId}`, { headers });
-            if (!res.ok) return;
-            const data = await res.json();
-            if (!data.ok) {
-                showError(data.error || 'Failed to open chat');
-                return;
-            }
-            currentChatId = chatId;
-            renderExistingMessages(data.chat?.messages || []);
-            await fetchChats();
-        }
-
         async function fetchLiveMetrics() {
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            const res = await fetch(METRICS_LIVE_URL, { headers }).catch(() => null);
+            const res = await fetchAPI(METRICS_LIVE_URL).catch(() => null);
             if (!res || !res.ok) return;
             const data = await res.json();
-            const m = data.data;
-            if (!m) {
-                liveMetrics.textContent = 'TPS: 0.0';
-                return;
-            }
-            liveMetrics.textContent = `TPS: ${m.tokens_per_sec || 0.0}`;
+            if (data.data) liveMetrics.textContent = \`\${data.data.tokens_per_sec || 0.0} TPS\`;
         }
 
-        async function fetchHealth() {
-            try {
-                const res = await fetch(HEALTH_URL);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.model) {
-                        modelReady = true;
-                        modelLoadStatus.textContent = 'Active';
-                        modelLoadStatus.className = 'font-bold uppercase tracking-wider text-emerald-600';
-                        document.getElementById('live-indicator-dot').classList.remove('hidden');
-                        
-                        // Try to select the matched active model in UI catalog
-                        const activeKey = data.model;
-                        let matchedOption = false;
-                        for (const model of catalogModels) {
-                            if (activeKey === model.id || activeKey === model.name || activeKey.includes(model.id) || model.id.includes(activeKey)) {
-                                activeModelId = model.id;
-                                activeModelNameDisplay.textContent = model.id;
-                                const brandInfo = getModelBrandInfo(model.id);
-                                activeModelLogoContainer.innerHTML = brandInfo.logo;
-                                matchedOption = true;
-                                break;
-                            }
-                        }
-                        if (!matchedOption) {
-                            // Custom loaded CLI model
-                            const modelBaseName = activeKey.split('/').pop() || activeKey;
-                            activeModelId = activeKey;
-                            activeModelNameDisplay.textContent = modelBaseName;
-                            const brandInfo = getModelBrandInfo(activeKey);
-                            activeModelLogoContainer.innerHTML = brandInfo.logo;
-                        }
-                        updateModelAccessUI();
-                    } else {
-                        modelReady = false;
-                        modelLoadStatus.textContent = 'No Model';
-                        modelLoadStatus.className = 'font-bold uppercase tracking-wider text-amber-500';
-                        showGateLoader("Active OpenRun Service", "No local LLM model loaded. Use the dropdown model selector above to automatically load a fast local reasoning engine.");
-                    }
-                }
-            } catch (e) {
-                modelReady = false;
-                modelLoadStatus.textContent = 'Offline';
-                modelLoadStatus.className = 'font-bold uppercase tracking-wider text-rose-500';
-                document.getElementById('live-indicator-dot').classList.add('hidden');
-                showGateLoader("OpenRun Offline", "The local server is offline or unreachable. Please launch the OpenRun serve process in your workspace terminal.");
-            }
-            updateSendButtonState();
+        // Messaging Logic
+        function updateSendButtonState() {
+            sendBtn.disabled = isGenerating || messageInput.value.trim() === '' || !modelReady;
         }
-
-        function showGateLoader(title, desc) {
-            modelGate.classList.remove('hidden');
-            gateTitle.textContent = title;
-            gateDesc.textContent = desc;
-        }
-
-        async function loadSelectedModelByName(modelId) {
-            modelReady = false;
-            modelLoadStatus.textContent = 'Loading...';
-            modelLoadStatus.className = 'font-bold uppercase tracking-wider text-blue-500 animate-pulse';
-            
-            showGateLoader("Loading model weights", `Deploying and loading ${modelId.toUpperCase()} weights into VRAM. This process leverages backend optimizations for quick local inference.`);
-            updateSendButtonState();
-
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                'Content-Type': 'application/json',
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            const payload = {
-                model_key: modelId,
-                hf_token: hfTokenInput.value.trim() || null
-            };
-
-            let res = await fetch(MODEL_LOAD_URL, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(payload)
-            }).catch(() => null);
-
-            if (!res || res.status === 404) {
-                res = await fetch('/v1/models/load', {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify(payload)
-                }).catch(() => null);
-            }
-
-            if (!res || !res.ok) {
-                showError('Failed to start loading model on local host');
-                fetchHealth();
-                return;
-            }
-
-            if (modelStatusPoll) clearInterval(modelStatusPoll);
-            modelStatusPoll = setInterval(pollModelStatus, 1500);
-            await pollModelStatus();
-        }
-
-        async function pollModelStatus() {
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
-            let res = await fetch(MODEL_STATUS_URL, { headers }).catch(() => null);
-            if (!res || !res.ok) res = await fetch('/v1/models/status', { headers }).catch(() => null);
-            if (!res || !res.ok) return;
-            const status = await res.json();
-
-            if (status.status === 'loading' || status.status === 'queued') {
-                modelReady = false;
-                const stage = status.stage ? ` - ${status.stage}` : '';
-                const prog = status.progress ? ` (${status.progress}%)` : '';
-                modelLoadStatus.textContent = `Loading${prog}`;
-                showGateLoader("Loading model weights", `Loading stage: ${status.message || 'Queued'} ${prog}${stage}. Preparing local pipeline.`);
-            } else if (status.status === 'ready' || status.loaded_model) {
-                modelReady = true;
-                modelLoadStatus.textContent = 'Active';
-                modelLoadStatus.className = 'font-bold uppercase tracking-wider text-emerald-600';
-                if (modelStatusPoll) {
-                    clearInterval(modelStatusPoll);
-                    modelStatusPoll = null;
-                }
-                updateModelAccessUI();
-                await fetchHealth();
-            } else if (status.status === 'error') {
-                modelReady = false;
-                modelLoadStatus.textContent = 'Load Failed';
-                modelLoadStatus.className = 'font-bold uppercase tracking-wider text-rose-500';
-                showGateLoader("Load process crashed", `Error: ${status.error || 'Failed to download or load model weights.'}`);
-                if (modelStatusPoll) {
-                    clearInterval(modelStatusPoll);
-                    modelStatusPoll = null;
-                }
-            }
-            updateSendButtonState();
-        }
-
-        // Live search filter
-        sidebarSearch.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                const text = item.querySelector('span').textContent.toLowerCase();
-                if (text.includes(query)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
-
-        // Suggestion buttons click
-        document.querySelectorAll('.suggestion-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const text = btn.querySelector('.font-bold').textContent + " " + btn.querySelector('.text-[10px]').textContent;
-                messageInput.value = text;
-                messageInput.focus();
-                adjustTextareaHeight();
-                updateSendButtonState();
-            });
-        });
-
+        
         function adjustTextareaHeight() {
             messageInput.style.height = 'auto';
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 180) + 'px';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
         }
 
-        messageInput.addEventListener('input', () => {
-            adjustTextareaHeight();
-            updateSendButtonState();
-        });
-
+        messageInput.addEventListener('input', () => { adjustTextareaHeight(); updateSendButtonState(); });
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1015,64 +924,99 @@ PLAYGROUND_HTML = """
         });
 
         sendBtn.addEventListener('click', sendMessage);
-        newChatBtn.addEventListener('click', async () => {
-            await createChat('New Chat');
+        newChatBtn.addEventListener('click', () => createChat('New Chat'));
+        clearBtn.addEventListener('click', () => { if (!isGenerating) clearChatView(); });
+
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const spans = btn.querySelectorAll('span');
+                messageInput.value = spans[0].textContent + " " + spans[1].textContent;
+                messageInput.focus();
+                adjustTextareaHeight();
+                updateSendButtonState();
+            });
         });
-        
+
         stopBtn.addEventListener('click', () => {
             if (abortController) {
                 abortController.abort();
-                isGenerating = false;
                 setUIGenerationState(false);
                 const lastMsg = chatContainer.lastElementChild;
                 if (lastMsg && lastMsg.dataset.role === 'assistant') {
-                    const contentDiv = lastMsg.querySelector('.message-content');
-                    if (contentDiv.querySelector('.typing-indicator')) {
-                         contentDiv.querySelector('.typing-indicator').remove();
-                    }
+                    const ind = lastMsg.querySelector('.typing-indicator');
+                    if (ind) ind.remove();
                 }
             }
-        });
-
-        clearBtn.addEventListener('click', () => {
-            if (isGenerating) return;
-            clearChatView();
         });
 
         function showError(msg) {
             errorMsg.textContent = msg;
             errorToast.classList.remove('opacity-0', 'translate-y-2');
-            setTimeout(() => { errorToast.classList.add('opacity-0', 'translate-y-2'); }, 4000);
+            setTimeout(() => errorToast.classList.add('opacity-0', 'translate-y-2'), 4000);
         }
 
-        function stabilizePartialMarkdown(text) {
-            if (!text) return '';
-            let stable = text;
-            const fenceCount = (stable.match(/```/g) || []).length;
-            if (fenceCount % 2 === 1) {
-                stable += '\\n```';
+        function setUIGenerationState(generating) {
+            isGenerating = generating;
+            messageInput.disabled = generating;
+            if (generating) {
+                stopBtn.classList.remove('hidden');
+                sendBtn.innerHTML = \`<i data-lucide="loader-2" class="w-4 h-4 text-primary-foreground animate-spin"></i>\`;
+            } else {
+                stopBtn.classList.add('hidden');
+                sendBtn.innerHTML = \`<i data-lucide="arrow-up" class="w-4 h-4 text-primary-foreground"></i>\`;
+                messageInput.focus();
             }
-            return stable;
+            lucide.createIcons();
+            updateSendButtonState();
         }
 
-        function renderStreamContent(textDiv, content, isFinal = false) {
-            try {
-                if (isFinal) {
-                    textDiv.innerHTML = marked.parse(content || '');
-                    return;
-                }
-                const stabilized = stabilizePartialMarkdown(content || '');
-                textDiv.innerHTML = marked.parse(stabilized);
-            } catch (_) {
-                textDiv.textContent = content || '';
+        function createMessageElement(role, content) {
+            const isUser = role === 'user';
+            const div = document.createElement('div');
+            div.className = \`flex w-full mx-auto max-w-3xl gap-4 \${isUser ? 'flex-row-reverse' : ''} animate-accordion-down\`;
+            div.dataset.role = role;
+            
+            const avatar = document.createElement('div');
+            avatar.className = \`w-8 h-8 flex-shrink-0 rounded-md flex items-center justify-center shadow-sm \${isUser ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-foreground'}\`;
+            
+            if (isUser) {
+                avatar.innerHTML = \`<i data-lucide="user" class="w-4.5 h-4.5"></i>\`;
+            } else {
+                avatar.innerHTML = \`<i data-lucide="bot" class="w-4.5 h-4.5"></i>\`;
             }
+            
+            const contentContainer = document.createElement('div');
+            contentContainer.className = \`flex flex-col flex-1 min-w-0 \${isUser ? 'items-end' : 'items-start'}\`;
+            
+            const textBubble = document.createElement('div');
+            textBubble.className = \`px-4 py-3 rounded-2xl max-w-full \${isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-card border border-border text-foreground rounded-tl-sm shadow-sm'}\`;
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = \`prose prose-sm dark:prose-invert max-w-none w-full break-words \${isUser ? 'text-primary-foreground prose-p:text-primary-foreground prose-headings:text-primary-foreground prose-strong:text-primary-foreground prose-a:text-primary-foreground' : ''}\`;
+            
+            if (isUser) {
+                textDiv.textContent = content;
+            } else if (content === '') {
+                textDiv.innerHTML = '<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            } else {
+                textDiv.innerHTML = renderMarkdown(content);
+            }
+            
+            textBubble.appendChild(textDiv);
+            contentContainer.appendChild(textBubble);
+            div.appendChild(avatar);
+            div.appendChild(contentContainer);
+            
+            // Re-init icons for dynamic content
+            setTimeout(() => lucide.createIcons({ root: avatar }), 0);
+            
+            return { element: div, textDiv };
         }
 
         function parseSSEEvents(buffer) {
             const events = [];
             const parts = buffer.split('\\n\\n');
             const remainder = parts.pop() || '';
-
             for (const part of parts) {
                 const dataLines = [];
                 for (const line of part.split('\\n')) {
@@ -1080,78 +1024,15 @@ PLAYGROUND_HTML = """
                         dataLines.push(line.slice(5).trimStart());
                     }
                 }
-                if (dataLines.length) {
-                    events.push(dataLines.join('\\n'));
-                }
+                if (dataLines.length) events.push(dataLines.join('\\n'));
             }
-
             return { events, remainder };
-        }
-        
-        function setUIGenerationState(generating) {
-            isGenerating = generating;
-            messageInput.disabled = generating;
-            
-            if (generating) {
-                stopBtn.classList.remove('hidden');
-                sendBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-            } else {
-                stopBtn.classList.add('hidden');
-                sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 ml-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg>`;
-                messageInput.focus();
-            }
-
-            updateSendButtonState();
-        }
-
-        function createMessageElement(role, content) {
-            const div = document.createElement('div');
-            const isUser = role === 'user';
-            div.className = `flex gap-4 max-w-3xl mx-auto w-full group animate-fade-in ${isUser ? 'flex-row-reverse' : ''}`;
-            div.dataset.role = role;
-            
-            const avatar = document.createElement('div');
-            avatar.className = `w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-semibold shadow-sm mt-0.5 ${isUser ? 'bg-blue-600 text-white ring-2 ring-blue-500/10' : 'bg-slate-50 border border-slate-200/60 text-slate-600'}`;
-            
-            if (isUser) {
-                avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
-            } else {
-                avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>`;
-            }
-            
-            const contentContainer = document.createElement('div');
-            contentContainer.className = `flex flex-col max-w-[82%] ${isUser ? 'items-end' : 'items-start'}`;
-            
-            const textBubble = document.createElement('div');
-            textBubble.className = `px-4.5 py-3.5 rounded-2xl ${isUser ? 'bg-slate-100 text-slate-800 rounded-tr-sm' : 'bg-white border border-slate-100 rounded-tl-sm shadow-sm'}`;
-            
-            const textDiv = document.createElement('div');
-            textDiv.className = `message-content markdown-body text-[14px] text-slate-800`;
-            
-            if (isUser) {
-                textDiv.textContent = content;
-            } else if (content === '') {
-                textDiv.innerHTML = '<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-            } else {
-                textDiv.innerHTML = marked.parse(content);
-            }
-            
-            textBubble.appendChild(textDiv);
-            contentContainer.appendChild(textBubble);
-            
-            div.appendChild(avatar);
-            div.appendChild(contentContainer);
-            
-            return { element: div, textDiv };
         }
 
         async function sendMessage() {
             const text = messageInput.value.trim();
-            if (!text) return;
-            if (!modelReady) {
-                showError('Active model runtime is loading. Please wait.');
-                return;
-            }
+            if (!text || !modelReady) return;
+            
             if (!currentChatId) {
                 const created = await createChat('New Chat');
                 if (!created) return;
@@ -1168,35 +1049,23 @@ PLAYGROUND_HTML = """
             
             const { element: botElement, textDiv: botTextDiv } = createMessageElement('assistant', '');
             chatContainer.appendChild(botElement);
-            
             chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
             
             const isStreaming = streamToggle.checked;
             abortController = new AbortController();
-            const apiKey = apiKeyInput.value.trim();
-            const headers = {
-                'Content-Type': 'application/json',
-                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {})
-            };
             
             try {
-                const payload = {
-                    model: activeModelId || "openrun",
-                    messages,
-                    stream: isStreaming,
-                    chat_id: currentChatId
-                };
-                const response = await fetch(API_URL, {
+                const payload = { model: activeModelId || "openrun", messages, stream: isStreaming, chat_id: currentChatId };
+                const response = await fetchAPI(API_URL, {
                     method: 'POST',
-                    headers,
                     body: JSON.stringify(payload),
                     signal: abortController.signal
                 });
                 
                 if (!response.ok) {
-                    let errMsg = `HTTP ${response.status}`;
+                    let errMsg = \`HTTP \${response.status}\`;
                     try { errMsg = (await response.json()).detail || errMsg; } catch(e) {}
-                    botTextDiv.innerHTML = `<span class="text-rose-500 font-semibold">Error: ${errMsg}</span>`;
+                    botTextDiv.innerHTML = \`<span class="text-destructive font-medium">\${errMsg}</span>\`;
                     messages.pop();
                     setUIGenerationState(false);
                     showError(errMsg);
@@ -1210,7 +1079,6 @@ PLAYGROUND_HTML = """
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder('utf-8');
                     let sseBuffer = '';
-                    let streamFinishReason = null;
                     
                     while (true) {
                         const { done, value } = await reader.read();
@@ -1219,52 +1087,35 @@ PLAYGROUND_HTML = """
                         sseBuffer += decoder.decode(value, { stream: true });
                         const parsed = parseSSEEvents(sseBuffer);
                         sseBuffer = parsed.remainder;
-    
+                        
                         for (const eventData of parsed.events) {
-                            if (eventData === '[DONE]') {
-                                continue;
-                            }
+                            if (eventData === '[DONE]') continue;
                             try {
                                 const data = JSON.parse(eventData);
-                                const deltaContent = data.choices?.[0]?.delta?.content || '';
-                                if (deltaContent) {
-                                    fullResponseText += deltaContent;
-                                    renderStreamContent(botTextDiv, fullResponseText, false);
-                                    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'auto' });
+                                const delta = data.choices?.[0]?.delta?.content || '';
+                                if (delta) {
+                                    fullResponseText += delta;
+                                    botTextDiv.innerHTML = renderMarkdown(fullResponseText);
+                                    chatContainer.scrollTo({ top: chatContainer.scrollHeight });
                                 }
-    
-                                const reason = data.choices?.[0]?.finish_reason;
-                                if (reason) {
-                                    streamFinishReason = reason;
-                                }
-    
-                                if (data.error?.message) {
-                                    showError(data.error.message);
-                                }
-                            } catch (e) {
-                                // keep buffering
-                            }
+                                if (data.error?.message) showError(data.error.message);
+                            } catch (e) {}
                         }
                     }
-    
-                    renderStreamContent(botTextDiv, fullResponseText, true);
-                    if (streamFinishReason === 'cancelled') {
-                        showError('Generation cancelled');
-                    } else if (streamFinishReason === 'error') {
-                        showError('Generation ended with an error');
-                    }
+                    botTextDiv.innerHTML = renderMarkdown(fullResponseText);
                 } else {
                     const data = await response.json();
                     fullResponseText = data.choices[0]?.message?.content || '';
-                    botTextDiv.innerHTML = marked.parse(fullResponseText);
+                    botTextDiv.innerHTML = renderMarkdown(fullResponseText);
                 }
+                
                 messages.push({ role: 'assistant', content: fullResponseText });
                 await fetchChats();
                 await fetchLiveMetrics();
                 
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    botTextDiv.innerHTML = `<span class="text-rose-500 font-semibold">Failed to connect.</span>`;
+                    botTextDiv.innerHTML = \`<span class="text-destructive font-medium">Connection failed</span>\`;
                     showError("Connection failed");
                     messages.pop(); 
                 }
@@ -1279,18 +1130,19 @@ PLAYGROUND_HTML = """
             await fetchHealth();
             await fetchChats();
             await fetchLiveMetrics();
-            
             if (metricsPoll) clearInterval(metricsPoll);
             metricsPoll = setInterval(fetchLiveMetrics, 2000);
-            
-            marked.setOptions({ breaks: true, gfm: true });
-            const renderCode = (code, language) => {
-                return `<pre><button class="copy-button" onclick="navigator.clipboard.writeText(this.parentElement.querySelector('code').innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
-            };
-            const renderer = new marked.Renderer();
-            renderer.code = renderCode;
-            marked.use({ renderer });
         }
+
+        // Live Search
+        sidebarSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            Array.from(chatsList.children).forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) item.style.display = 'flex';
+                else item.style.display = 'none';
+            });
+        });
 
         initPlayground();
     </script>
