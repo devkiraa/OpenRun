@@ -230,11 +230,20 @@ def run_predefined(args):
             print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
             adapter = HuggingFaceAdapter(model, quantize=config.quantize, low_cpu_mem=config.low_cpu_mem)
             adapter.load()
-        except RuntimeError:
+        except RuntimeError as e:
+            if "Gated Repository" in str(e):
+                import sys
+                sys.exit(1)
             print("\033[93m⚠️ Memory limited! Switching to AirLLM engine...\033[0m")
             print("\033[93m⏳ Expect slower responses (10-60 seconds)\033[0m")
             adapter = AirLLMAdapter(model)
-            adapter.load()
+            try:
+                adapter.load()
+            except RuntimeError as ex:
+                if "Gated Repository" in str(ex):
+                    import sys
+                    sys.exit(1)
+                raise
     elif engine == "ollama":
         print(f"\033[90m[2/3] Connecting to local Ollama ({model})...\033[0m")
         adapter = OllamaAdapter(model)
@@ -243,7 +252,13 @@ def run_predefined(args):
         print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
         print("\033[93m⏳ Large model detected. Expect slower responses.\033[0m")
         adapter = AirLLMAdapter(model)
-        adapter.load()
+        try:
+            adapter.load()
+        except RuntimeError as e:
+            if "Gated Repository" in str(e):
+                import sys
+                sys.exit(1)
+            raise
 
     state = get_global_state()
     state.adapter = adapter

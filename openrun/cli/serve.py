@@ -26,7 +26,13 @@ def run_serve(args):
     set_global_state(config=config, model=None)
 
     # Load model via loader
-    load_model(config)
+    import sys
+    try:
+        load_model(config)
+    except Exception as e:
+        if "Gated Repository" in str(e):
+            sys.exit(1)
+        raise
 
     # Start Cloudflare tunnel if requested
     if config.public:
