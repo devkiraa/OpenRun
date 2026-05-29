@@ -4,7 +4,20 @@ import importlib.metadata
 import os
 import re
 
-# Automatically resolve HF_TOKEN in Google Colab secrets and inject it into os.environ
+# Automatically resolve HF_TOKEN in settings or Google Colab secrets and inject it into os.environ
+if "HF_TOKEN" not in os.environ:
+    try:
+        settings_file = os.path.expanduser("~/.openrun/settings.json")
+        if os.path.exists(settings_file):
+            import json
+            with open(settings_file, "r") as f:
+                settings = json.load(f)
+                token = settings.get("hf_token")
+                if token:
+                    os.environ["HF_TOKEN"] = token
+    except Exception:
+        pass
+
 if "HF_TOKEN" not in os.environ:
     try:
         from google.colab import userdata  # type: ignore

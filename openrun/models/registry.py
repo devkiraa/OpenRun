@@ -216,7 +216,7 @@ PREDEFINED_MODELS = {
 
 def load_dynamic_models():
     """
-    Dynamically loads model catalog from Google Sheets (CSV format).
+    Dynamically loads model catalog from remote CSV (GitHub raw CSV or custom URL).
     Falls back to static PREDEFINED_MODELS if request fails or offline.
     """
     import os
@@ -244,8 +244,11 @@ def load_dynamic_models():
         return
 
     sheet_url = os.getenv(
-        "OPENRUN_MODELS_SHEET_URL",
-        "https://docs.google.com/spreadsheets/d/12AF0ixg2X2LpapPReZwZdeh7mX-er4xm1NGIaZoNjLg/export?format=csv"
+        "OPENRUN_MODELS_URL",
+        os.getenv(
+            "OPENRUN_MODELS_SHEET_URL",
+            "https://raw.githubusercontent.com/devkiraa/OpenRun/main/openrun-models.csv"
+        )
     )
 
     if not sheet_url:
@@ -254,36 +257,73 @@ def load_dynamic_models():
     is_tty = sys.stdout.isatty()
 
     class Spinner:
-        def __init__(self, message="Syncing dynamic models catalog..."):
-            self.spinner_chars = [
-                "▰▱▱▱▱▱▱", 
-                "▱▰▱▱▱▱▱", 
-                "▱▱▰▱▱▱▱", 
-                "▱▱▱▰▱▱▱", 
-                "▱▱▱▱▰▱▱", 
-                "▱▱▱▱▱▰▱", 
-                "▱▱▱▱▱▱▰",
-                "▱▱▱▱▱▰▱",
-                "▱▱▱▱▰▱▱",
-                "▱▱▱▰▱▱▱",
-                "▱▱▰▱▱▱▱",
-                "▱▰▱▱▱▱▱"
-            ]
-            self.message = message
+        def __init__(self):
+            # A gorgeous, large symmetric organic breathing block wave gradient animation with absolutely no text!
+            self.frames = []
+            width = 41 # expanded width for a larger visual visualizer
+            center = width // 2
+            
+            # Active blocks expanding from center: 1, 3, 5, ..., 41
+            expansion_levels = list(range(1, width + 1, 2))
+            
+            # Forward expansion (breathing out)
+            for active_count in expansion_levels:
+                bar = ["▱"] * width
+                half = active_count // 2
+                for i in range(center - half, center + half + 1):
+                    bar[i] = "▰"
+                
+                colored_bar = []
+                for idx, char in enumerate(bar):
+                    if char == "▰":
+                        # Dynamic center-outward color gradient: Bright Emerald Green to Glowing Purple/Magenta
+                        dist = abs(idx - center)
+                        r = int(dist * 9)
+                        g = int(255 - dist * 11)
+                        b = int(130 + dist * 6)
+                        r = max(0, min(255, r))
+                        g = max(0, min(255, g))
+                        b = max(0, min(255, b))
+                        colored_bar.append(f"\033[38;2;{r};{g};{b}m{char}\033[0m")
+                    else:
+                        colored_bar.append(f"\033[90m{char}\033[0m")
+                self.frames.append("".join(colored_bar))
+                
+            # Reverse contraction (breathing in)
+            for active_count in reversed(expansion_levels[1:-1]):
+                bar = ["▱"] * width
+                half = active_count // 2
+                for i in range(center - half, center + half + 1):
+                    bar[i] = "▰"
+                
+                colored_bar = []
+                for idx, char in enumerate(bar):
+                    if char == "▰":
+                        dist = abs(idx - center)
+                        r = int(dist * 9)
+                        g = int(255 - dist * 11)
+                        b = int(130 + dist * 6)
+                        r = max(0, min(255, r))
+                        g = max(0, min(255, g))
+                        b = max(0, min(255, b))
+                        colored_bar.append(f"\033[38;2;{r};{g};{b}m{char}\033[0m")
+                    else:
+                        colored_bar.append(f"\033[90m{char}\033[0m")
+                self.frames.append("".join(colored_bar))
+
             self.running = False
             self.thread = None
 
         def spin(self):
             idx = 0
             while self.running:
-                sys.stdout.write(f"\r\033[96m{self.spinner_chars[idx]}\033[0m {self.message}")
+                sys.stdout.write(f"\r{self.frames[idx]}")
                 sys.stdout.flush()
-                time.sleep(0.08)
-                idx = (idx + 1) % len(self.spinner_chars)
+                time.sleep(0.05) # smooth breathing pulse frame rate
+                idx = (idx + 1) % len(self.frames)
 
         def start(self):
             if not is_tty:
-                print(f"🔄 {self.message}")
                 return
             self.running = True
             self.thread = threading.Thread(target=self.spin, daemon=True)
@@ -295,12 +335,8 @@ def load_dynamic_models():
             self.running = False
             if self.thread:
                 self.thread.join()
-            sys.stdout.write("\r\033[K")  # Clear the line
+            sys.stdout.write("\r\033[K")  # Clear the line completely
             sys.stdout.flush()
-            if success:
-                print("\033[92m✔ Dynamic models catalog successfully synced.\033[0m")
-            else:
-                print("\033[90mℹ Offline. Using standard offline models catalog.\033[0m")
 
     spinner = Spinner()
     spinner.start()

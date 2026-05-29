@@ -261,7 +261,7 @@ PLAYGROUND_HTML = """
 
     <!-- Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -359,9 +359,10 @@ PLAYGROUND_HTML = """
         </header>
 
         <!-- LOADER GATE -->
-        <div id="model-gate" class="hidden absolute inset-0 bg-background/80 backdrop-blur-sm z-30 flex items-center justify-center p-6">
+        <div id="model-gate" class="hidden absolute inset-x-0 bottom-0 top-14 bg-background/80 backdrop-blur-sm z-30 flex items-center justify-center p-6">
             <div class="max-w-md w-full border border-border rounded-xl bg-card shadow-lg p-6 flex flex-col items-center text-center">
-                <i data-lucide="loader-2" class="w-8 h-8 text-primary animate-spin mb-4"></i>
+                <i data-lucide="loader-2" class="w-8 h-8 text-primary animate-spin mb-4" id="gate-spinner"></i>
+                <i data-lucide="cpu" class="w-8 h-8 text-amber-500 mb-4 hidden" id="gate-info-icon"></i>
                 <h3 class="text-lg font-semibold text-foreground" id="gate-title">Starting Model Engine</h3>
                 <p class="mt-2 text-sm text-muted-foreground" id="gate-desc">Please wait while the weights are loaded into memory.</p>
             </div>
@@ -628,19 +629,19 @@ PLAYGROUND_HTML = """
             const validLanguage = hljs.getLanguage(language) ? language : 'plaintext';
             const highlighted = hljs.highlight(code, { language: validLanguage }).value;
             
-            return \`
+            return `
             <div class="my-4 rounded-md overflow-hidden border border-border bg-[#282c34] font-mono text-sm shadow-sm">
                 <div class="code-header flex justify-between items-center px-3 py-1.5 bg-[#21252b] border-b border-[#181a1f] text-xs text-[#9ca3af]">
-                    <span class="uppercase tracking-wider font-semibold">\${validLanguage}</span>
+                    <span class="uppercase tracking-wider font-semibold">${validLanguage}</span>
                     <button class="copy-code-btn flex items-center gap-1.5 hover:text-white transition-colors" onclick="copyCodeText(this)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                         <span>Copy</span>
                     </button>
                 </div>
                 <div class="p-3 overflow-x-auto">
-                    <code class="hljs language-\${validLanguage}" style="background:transparent; padding:0;">\${highlighted}</code>
+                    <code class="hljs language-${validLanguage}" style="background:transparent; padding:0;">${highlighted}</code>
                 </div>
-            </div>\`;
+            </div>`;
         };
         marked.use({ renderer });
 
@@ -658,10 +659,10 @@ PLAYGROUND_HTML = """
             if (!content) return '';
             try {
                 // Stabilize incomplete code blocks during streaming
-                const fenceCount = (content.match(/\`\`\`/g) || []).length;
+                const fenceCount = (content.match(/```/g) || []).length;
                 let stableContent = content;
                 if (fenceCount % 2 === 1) {
-                    stableContent += '\\n\`\`\`';
+                    stableContent += '\n```';
                 }
                 const rawHtml = marked.parse(stableContent);
                 // Sanitize HTML
@@ -680,7 +681,7 @@ PLAYGROUND_HTML = """
             const apiKey = apiKeyInput.value.trim();
             const headers = {
                 'Content-Type': 'application/json',
-                ...(apiKey ? {'Authorization': \`Bearer \${apiKey}\`} : {}),
+                ...(apiKey ? {'Authorization': `Bearer ${apiKey}`} : {}),
                 ...options.headers
             };
             return fetch(url, { ...options, headers });
@@ -701,7 +702,7 @@ PLAYGROUND_HTML = """
             dropdown.innerHTML = '';
             
             if (catalogModels.length === 0) {
-                dropdown.innerHTML = \`<div class="px-3 py-2 text-center text-xs text-muted-foreground">No models</div>\`;
+                dropdown.innerHTML = `<div class="px-3 py-2 text-center text-xs text-muted-foreground">No models</div>`;
                 return;
             }
 
@@ -709,12 +710,12 @@ PLAYGROUND_HTML = """
                 const option = document.createElement('button');
                 option.className = 'w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent hover:text-accent-foreground rounded-sm flex items-center justify-between transition group';
                 
-                option.innerHTML = \`
+                option.innerHTML = `
                     <div class="flex flex-col">
-                        <span class="font-medium">\${model.id}</span>
-                        <span class="text-[10px] text-muted-foreground">\${model.size || 'N/A'} • \${model.engine || 'N/A'}</span>
+                        <span class="font-medium">${model.id}</span>
+                        <span class="text-[10px] text-muted-foreground">${model.size || 'N/A'} • ${model.engine || 'N/A'}</span>
                     </div>
-                \`;
+                `;
                 
                 option.addEventListener('click', async () => {
                     activeModelId = model.id;
@@ -749,7 +750,7 @@ PLAYGROUND_HTML = """
                         modelReady = false;
                         modelLoadStatus.textContent = 'No Model';
                         modelLoadStatus.className = 'text-amber-500 font-medium';
-                        showGateLoader("Active Service", "No LLM loaded. Please select one from the dropdown.");
+                        showGateLoader("Active Service", "No LLM loaded. Please select one from the dropdown.", false);
                     }
                 }
             } catch (e) {
@@ -757,57 +758,73 @@ PLAYGROUND_HTML = """
                 modelLoadStatus.textContent = 'Offline';
                 modelLoadStatus.className = 'text-destructive font-medium';
                 document.getElementById('live-indicator-dot').classList.add('hidden');
-                showGateLoader("Offline", "Local server is unreachable.");
+                showGateLoader("Offline", "Local server is unreachable.", false);
             }
             updateSendButtonState();
         }
-
-        function showGateLoader(title, desc) {
+ 
+        function showGateLoader(title, desc, isLoading = true) {
             modelGate.classList.remove('hidden');
             gateTitle.textContent = title;
             gateDesc.textContent = desc;
+            
+            const spinner = document.getElementById('gate-spinner');
+            const infoIcon = document.getElementById('gate-info-icon');
+            
+            if (spinner && infoIcon) {
+                if (isLoading) {
+                    spinner.classList.remove('hidden');
+                    infoIcon.classList.add('hidden');
+                } else {
+                    spinner.classList.add('hidden');
+                    infoIcon.classList.remove('hidden');
+                }
+            }
+            if (window.lucide) {
+                lucide.createIcons();
+            }
         }
-
+ 
         async function loadSelectedModelByName(modelId) {
             modelReady = false;
             modelLoadStatus.textContent = 'Loading...';
             modelLoadStatus.className = 'text-primary font-medium animate-pulse';
             
-            showGateLoader("Loading weights", \`Loading \${modelId} into memory...\`);
+            showGateLoader("Loading weights", `Loading ${modelId} into memory...`, true);
             updateSendButtonState();
-
+ 
             const payload = {
                 model_key: modelId,
                 hf_token: hfTokenInput.value.trim() || null
             };
-
+ 
             let res = await fetchAPI(MODEL_LOAD_URL, { method: 'POST', body: JSON.stringify(payload) }).catch(() => null);
             if (!res || res.status === 404) {
                 res = await fetchAPI('/v1/models/load', { method: 'POST', body: JSON.stringify(payload) }).catch(() => null);
             }
-
+ 
             if (!res || !res.ok) {
                 showError('Failed to load model.');
                 fetchHealth();
                 return;
             }
-
+ 
             if (modelStatusPoll) clearInterval(modelStatusPoll);
             modelStatusPoll = setInterval(pollModelStatus, 1500);
             await pollModelStatus();
         }
-
+ 
         async function pollModelStatus() {
             let res = await fetchAPI(MODEL_STATUS_URL).catch(() => null);
             if (!res || !res.ok) res = await fetchAPI('/v1/models/status').catch(() => null);
             if (!res || !res.ok) return;
             const status = await res.json();
-
+ 
             if (status.status === 'loading' || status.status === 'queued') {
                 modelReady = false;
-                const prog = status.progress ? \`(\${status.progress}%)\` : '';
-                modelLoadStatus.textContent = \`Loading \${prog}\`;
-                showGateLoader("Loading model", \`\${status.message || 'Queued'} \${prog}\`);
+                const prog = status.progress ? `(${status.progress}%)` : '';
+                modelLoadStatus.textContent = `Loading ${prog}`;
+                showGateLoader("Loading model", `${status.message || 'Queued'} ${prog}`, true);
             } else if (status.status === 'ready' || status.loaded_model) {
                 modelReady = true;
                 modelLoadStatus.textContent = 'Active';
@@ -819,7 +836,7 @@ PLAYGROUND_HTML = """
                 modelReady = false;
                 modelLoadStatus.textContent = 'Error';
                 modelLoadStatus.className = 'text-destructive font-medium';
-                showGateLoader("Load Failed", status.error || 'Failed to load weights.');
+                showGateLoader("Load Failed", status.error || 'Failed to load weights.', false);
                 if (modelStatusPoll) { clearInterval(modelStatusPoll); modelStatusPoll = null; }
             }
             updateSendButtonState();
@@ -827,12 +844,12 @@ PLAYGROUND_HTML = """
 
         // Chat Management
         function renderEmptyChats() {
-            chatsList.innerHTML = \`
+            chatsList.innerHTML = `
                 <div class="py-6 text-center text-muted-foreground flex flex-col items-center">
                     <i data-lucide="message-square-off" class="w-6 h-6 mb-2 opacity-50"></i>
                     <p class="text-xs">No chats yet</p>
                 </div>
-            \`;
+            `;
             lucide.createIcons();
         }
 
@@ -849,14 +866,14 @@ PLAYGROUND_HTML = """
                 chats.forEach(chat => {
                     const isActive = chat.id === currentChatId;
                     const btn = document.createElement('div');
-                    btn.className = \`group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition text-sm \${isActive ? 'bg-accent text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}\`;
+                    btn.className = `group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition text-sm ${isActive ? 'bg-accent text-accent-foreground font-medium' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}`;
                     
-                    btn.innerHTML = \`
+                    btn.innerHTML = `
                         <div class="flex items-center gap-2 truncate">
                             <i data-lucide="message-square" class="w-4 h-4 flex-shrink-0"></i>
-                            <span class="truncate">\${chat.title || 'Untitled'}</span>
+                            <span class="truncate">${chat.title || 'Untitled'}</span>
                         </div>
-                    \`;
+                    `;
                     btn.addEventListener('click', () => openChat(chat.id));
                     chatsList.appendChild(btn);
                 });
@@ -880,7 +897,7 @@ PLAYGROUND_HTML = """
 
         async function openChat(chatId) {
             if (!chatId) return;
-            const res = await fetchAPI(\`\${CHATS_URL}/\${chatId}\`);
+            const res = await fetchAPI(`${CHATS_URL}/${chatId}`);
             if (!res.ok) return;
             const data = await res.json();
             if (!data.ok) { showError('Failed to open chat'); return; }
@@ -909,7 +926,7 @@ PLAYGROUND_HTML = """
             const res = await fetchAPI(METRICS_LIVE_URL).catch(() => null);
             if (!res || !res.ok) return;
             const data = await res.json();
-            if (data.data) liveMetrics.textContent = \`\${data.data.tokens_per_sec || 0.0} TPS\`;
+            if (data.data) liveMetrics.textContent = `${data.data.tokens_per_sec || 0.0} TPS`;
         }
 
         // Messaging Logic
@@ -967,10 +984,10 @@ PLAYGROUND_HTML = """
             messageInput.disabled = generating;
             if (generating) {
                 stopBtn.classList.remove('hidden');
-                sendBtn.innerHTML = \`<i data-lucide="loader-2" class="w-4 h-4 text-primary-foreground animate-spin"></i>\`;
+                sendBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 text-primary-foreground animate-spin"></i>`;
             } else {
                 stopBtn.classList.add('hidden');
-                sendBtn.innerHTML = \`<i data-lucide="arrow-up" class="w-4 h-4 text-primary-foreground"></i>\`;
+                sendBtn.innerHTML = `<i data-lucide="arrow-up" class="w-4 h-4 text-primary-foreground"></i>`;
                 messageInput.focus();
             }
             lucide.createIcons();
@@ -980,26 +997,26 @@ PLAYGROUND_HTML = """
         function createMessageElement(role, content) {
             const isUser = role === 'user';
             const div = document.createElement('div');
-            div.className = \`flex w-full mx-auto max-w-3xl gap-4 \${isUser ? 'flex-row-reverse' : ''} animate-accordion-down\`;
+            div.className = `flex w-full mx-auto max-w-3xl gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-accordion-down`;
             div.dataset.role = role;
             
             const avatar = document.createElement('div');
-            avatar.className = \`w-8 h-8 flex-shrink-0 rounded-md flex items-center justify-center shadow-sm \${isUser ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-foreground'}\`;
+            avatar.className = `w-8 h-8 flex-shrink-0 rounded-md flex items-center justify-center shadow-sm ${isUser ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-foreground'}`;
             
             if (isUser) {
-                avatar.innerHTML = \`<i data-lucide="user" class="w-4.5 h-4.5"></i>\`;
+                avatar.innerHTML = `<i data-lucide="user" class="w-4.5 h-4.5"></i>`;
             } else {
-                avatar.innerHTML = \`<i data-lucide="bot" class="w-4.5 h-4.5"></i>\`;
+                avatar.innerHTML = `<i data-lucide="bot" class="w-4.5 h-4.5"></i>`;
             }
             
             const contentContainer = document.createElement('div');
-            contentContainer.className = \`flex flex-col flex-1 min-w-0 \${isUser ? 'items-end' : 'items-start'}\`;
+            contentContainer.className = `flex flex-col flex-1 min-w-0 ${isUser ? 'items-end' : 'items-start'}`;
             
             const textBubble = document.createElement('div');
-            textBubble.className = \`px-4 py-3 rounded-2xl max-w-full \${isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-card border border-border text-foreground rounded-tl-sm shadow-sm'}\`;
+            textBubble.className = `px-4 py-3 rounded-2xl max-w-full ${isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-card border border-border text-foreground rounded-tl-sm shadow-sm'}`;
             
             const textDiv = document.createElement('div');
-            textDiv.className = \`prose prose-sm dark:prose-invert max-w-none w-full break-words \${isUser ? 'text-primary-foreground prose-p:text-primary-foreground prose-headings:text-primary-foreground prose-strong:text-primary-foreground prose-a:text-primary-foreground' : ''}\`;
+            textDiv.className = `prose prose-sm dark:prose-invert max-w-none w-full break-words ${isUser ? 'text-primary-foreground prose-p:text-primary-foreground prose-headings:text-primary-foreground prose-strong:text-primary-foreground prose-a:text-primary-foreground' : ''}`;
             
             if (isUser) {
                 textDiv.textContent = content;
@@ -1070,9 +1087,9 @@ PLAYGROUND_HTML = """
                 });
                 
                 if (!response.ok) {
-                    let errMsg = \`HTTP \${response.status}\`;
+                    let errMsg = `HTTP ${response.status}`;
                     try { errMsg = (await response.json()).detail || errMsg; } catch(e) {}
-                    botTextDiv.innerHTML = \`<span class="text-destructive font-medium">\${errMsg}</span>\`;
+                    botTextDiv.innerHTML = `<span class="text-destructive font-medium">${errMsg}</span>`;
                     messages.pop();
                     setUIGenerationState(false);
                     showError(errMsg);
@@ -1122,7 +1139,7 @@ PLAYGROUND_HTML = """
                 
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    botTextDiv.innerHTML = \`<span class="text-destructive font-medium">Connection failed</span>\`;
+                    botTextDiv.innerHTML = `<span class="text-destructive font-medium">Connection failed</span>`;
                     showError("Connection failed");
                     messages.pop(); 
                 }

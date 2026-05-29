@@ -250,7 +250,7 @@ def main():
         pass
 
     if len(sys.argv) == 1 or (
-        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "models", "model", "-v", "--version", "--models", "--model", "-h", "--help"]
+        len(sys.argv) > 1 and sys.argv[1] not in ["serve", "run", "chat", "models", "model", "-v", "--version", "--models", "--model", "-h", "--help", "master", "--master", "clean", "settings", "--settings"]
     ):
         banner = load_banner()
         animate_banner(banner)
@@ -261,11 +261,23 @@ def main():
     parser.add_argument("--models", "--model", nargs="?", const=True, help="List all available predefined models, optionally filtering by task or query")
     parser.add_argument("--search", "-s", type=str, help="Search for models matching a query")
     parser.add_argument("--task", "-t", type=str, choices=["text", "image", "embedding", "all"], default="all", help="Filter models by task type")
+    parser.add_argument("--master", action="store_true", help="Analyze system hardware to recommend models and estimate performance")
+    parser.add_argument("--settings", action="store_true", help="Manage OpenRun configuration settings")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Models command
     models_parser = subparsers.add_parser("models", help="List all available predefined models")
     model_parser = subparsers.add_parser("model", help="List all available predefined models")
+    
+    # Master command
+    master_parser = subparsers.add_parser("master", help="Analyze system hardware to recommend models and estimate performance")
+    
+    # Clean command
+    clean_parser = subparsers.add_parser("clean", help="Clean the folder where downloaded model weights are saved")
+    clean_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt and clear immediately")
+
+    # Settings command
+    settings_parser = subparsers.add_parser("settings", help="Manage OpenRun configuration settings")
 
     for p in [models_parser, model_parser]:
         p.add_argument("query", type=str, nargs="?", help="Search query or task type (e.g. image, text, deepseek)")
@@ -304,9 +316,80 @@ def main():
 
     args = parser.parse_args()
 
+    # Merge user settings defaults with CLI parsed options if not explicitly passed
+    try:
+        from openrun.core.settings import get_settings
+        settings = get_settings()
+        if not any(arg.startswith("--port") for arg in sys.argv) and hasattr(args, "port"):
+            args.port = settings.get("default_port", 8000)
+        if not any(arg.startswith("--api-key") for arg in sys.argv) and hasattr(args, "api_key"):
+            stored_api_key = settings.get("api_key")
+            if stored_api_key:
+                args.api_key = stored_api_key
+    except Exception:
+        pass
+
     if args.version:
         print(f"\033[92mOpenRun v{__version__}\033[0m")
         return
+
+    if args.settings or args.command == "settings":
+        from openrun.cli.settings import run_settings_menu
+        run_settings_menu()
+        return
+
+    if args.master or args.command == "master":
+        from openrun.cli.master import run_master_analysis
+        run_master_analysis()
+        return
+
+    if args.command == "clean":
+        from openrun.core.settings import get_settings
+        import questionary
+        import shutil
+        
+        settings = get_settings()
+        cache_dir = settings.get("cache_dir")
+        
+        print(f"\n\033[1;93m🧹 Clean OpenRun Model Cache Storage\033[0m")
+        print(f"Target Directory: \033[96m{cache_dir}\033[0m")
+        
+        if not os.path.exists(cache_dir) or not os.listdir(cache_dir):
+            print("\033[92m✔ The cache directory is already completely empty.\033[0m\n")
+            return
+            
+        confirm = getattr(args, "yes", False)
+        
+        if not confirm:
+            if not sys.stdout.isatty():
+                print("\033[91m🛑 Non-interactive environment detected. Run with '--yes' to confirm deletion.\033[0m\n")
+                return
+                
+            confirm = questionary.confirm(
+                f"Are you sure you want to delete ALL downloaded models in {cache_dir}?",
+                default=False
+            ).ask()
+        
+        if confirm:
+            print("\033[90mClearing directory contents...\033[0m")
+            try:
+                for item in os.listdir(cache_dir):
+                    item_path = os.path.join(cache_dir, item)
+                    if os.path.isdir(item_path):
+                        shutil.rmtree(item_path)
+                    else:
+                        os.remove(item_path)
+                print("\033[92m✔ Cache directory cleared successfully.\033[0m\n")
+            except Exception as e:
+                print(f"\033[91m⚠️ Failed to clear directory: {e}\033[0m\n")
+        else:
+            print("\033[90mCleaning cancelled.\033[0m\n")
+        return
+
+    if args.command in ["serve", "run", "chat"]:
+        from openrun.core.settings import get_cache_dir
+        cache_dir = get_cache_dir(interactive=True)
+        os.environ["HF_HOME"] = cache_dir
 
     if args.models or args.command in ["models", "model"]:
         from openrun.cli.models_list import list_models

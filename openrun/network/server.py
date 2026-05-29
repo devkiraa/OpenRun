@@ -21,18 +21,37 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def log_requests(request: Request, call_next):
         import time
+        import sys
         start_time = time.time()
         response = await call_next(request)
         process_time = (time.time() - start_time) * 1000
         
         # Detailed errors (400+) show up as WARNING
         if response.status_code >= 400:
+            # Print a newline to clear the in-place log before showing the error
+            sys.stdout.write("\n")
             logger.warning(f"Request: {request.method} {request.url.path} - Status: {response.status_code} ({process_time:.2f}ms)")
-        # Detailed successes show up as INFO
+        # Detailed successes show up as INFO and update in-place with VRAM/RAM stats
         else:
-            # Uvicorn hides INFO when log_level="warning", so we bypass with our logger if we want.
-            # But the user asked for "detailed logs too" so let's log the successful ones too.
-            print(f"\033[90m[INFO] {request.method} {request.url.path} - Status: {response.status_code} ({process_time:.2f}ms)\033[0m")
+            try:
+                from openrun.cli.master import get_hardware_specs
+                specs = get_hardware_specs()
+                
+                ram_used = (specs["total_ram"] - specs["free_ram"]) / (1024**3)
+                ram_total = specs["total_ram"] / (1024**3)
+                stats_str = f"RAM: {ram_used:.2f}/{ram_total:.2f} GB"
+                
+                if specs["gpu_available"]:
+                    vram_used = (specs["total_vram"] - specs["free_vram"]) / (1024**3)
+                    vram_total = specs["total_vram"] / (1024**3)
+                    stats_str += f" | VRAM: {vram_used:.2f}/{vram_total:.2f} GB"
+            except Exception:
+                stats_str = "Stats: N/A"
+                
+            # Write in-place to avoid filling up the console scrollback on successful hits
+            log_msg = f"\r\033[90m[INFO] {request.method} {request.url.path} - Status: {response.status_code} ({process_time:.2f}ms) | {stats_str}\033[0m\033[K"
+            sys.stdout.write(log_msg)
+            sys.stdout.flush()
             
         return response
 
