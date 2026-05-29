@@ -258,12 +258,19 @@ def main():
 
     parser = argparse.ArgumentParser(description="OpenRun - Target any local AI model via an OpenAI-compatible API")
     parser.add_argument("-v", "--version", action="store_true", help="Show OpenRun version")
-    parser.add_argument("--models", "--model", action="store_true", help="List all available predefined models")
+    parser.add_argument("--models", "--model", nargs="?", const=True, help="List all available predefined models, optionally filtering by task or query")
+    parser.add_argument("--search", "-s", type=str, help="Search for models matching a query")
+    parser.add_argument("--task", "-t", type=str, choices=["text", "image", "embedding", "all"], default="all", help="Filter models by task type")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Models command
     models_parser = subparsers.add_parser("models", help="List all available predefined models")
     model_parser = subparsers.add_parser("model", help="List all available predefined models")
+
+    for p in [models_parser, model_parser]:
+        p.add_argument("query", type=str, nargs="?", help="Search query or task type (e.g. image, text, deepseek)")
+        p.add_argument("--search", "-s", type=str, help="Search for models matching a query")
+        p.add_argument("--task", "-t", type=str, choices=["text", "image", "embedding", "all"], default="all", help="Filter models by task type")
 
     # Serve command
     serve_parser = subparsers.add_parser("serve", help="Start the OpenAI-compatible server")
@@ -303,7 +310,24 @@ def main():
 
     if args.models or args.command in ["models", "model"]:
         from openrun.cli.models_list import list_models
-        list_models()
+        
+        query = getattr(args, "query", None)
+        
+        # Handle option form value: e.g. openrun --models image
+        if args.models and isinstance(args.models, str):
+            query = args.models
+            
+        search_query = getattr(args, "search", None)
+        task_filter = getattr(args, "task", "all")
+        
+        if query:
+            query_lower = query.strip().lower()
+            if query_lower in ["image", "text", "embedding", "all"]:
+                task_filter = query_lower
+            else:
+                search_query = query
+                
+        list_models(search=search_query, task=task_filter)
         return
 
     import asyncio

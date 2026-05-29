@@ -1433,6 +1433,11 @@ async def model_loading_status():
 @router.get("/models/catalog")
 @router.get("/v1/models/catalog")
 async def model_catalog():
+    try:
+        from openrun.models.registry import load_dynamic_models
+        load_dynamic_models()
+    except Exception:
+        pass
     data = []
     for key, info in PREDEFINED_MODELS.items():
         data.append({

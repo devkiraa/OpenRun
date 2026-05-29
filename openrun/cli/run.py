@@ -2,9 +2,14 @@ import time
 import os
 import sys
 import questionary
-from openrun.models.registry import PREDEFINED_MODELS
+from openrun.models.registry import PREDEFINED_MODELS, load_dynamic_models
 
 def run_predefined(args):
+    # Try fetching latest models catalog dynamically from Google Sheets
+    try:
+        load_dynamic_models()
+    except Exception:
+        pass
     if not args.model_name:
         is_colab = False
         try:

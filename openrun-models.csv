@@ -1,0 +1,53 @@
+Key,Model,Engine,Type,Size,Context,Speed,VRAM,Best Used For / Capabilities
+smollm2-135m,HuggingFaceTB/SmolLM2-135M-Instruct,transformers,ultra-fast,135M,8k,~250+ t/s,~1 GB,Edge devices and extreme micro-tasks.
+smollm2-360m,HuggingFaceTB/SmolLM2-360M-Instruct,transformers,ultra-fast,360M,8k,~200+ t/s,~1.5 GB,Ultra-lightweight log parsing and routing.
+qwen2.5-0.5b,Qwen/Qwen2.5-0.5B-Instruct,transformers,ultra-fast,0.5B,32k,~150+ t/s,~2 GB,The absolute fastest basic logic and formatting.
+qwen2.5-coder-0.5b,Qwen/Qwen2.5-Coder-0.5B-Instruct,transformers,ultra-fast,0.5B,32k,~150+ t/s,~2 GB,Rapid syntax checking and micro-script generation.
+llama3.2-1b,meta-llama/Llama-3.2-1B-Instruct,transformers,fast,1B,128k,~120+ t/s,~3.5 GB,Meta's fastest agentic reasoning and on-device logic.
+olmo-1b,allenai/OLMo-1B-Instruct,transformers,fast,1B,2k,~120+ t/s,~3.5 GB,"Transparent, highly documented benchmarking."
+smollm2-1.3b,HuggingFaceTB/SmolLM2-1.3B-Instruct,transformers,fast,1.3B,8k,~100+ t/s,~3.5 GB,"Tagging, filtering, and structuring web-scraped data."
+qwen2.5-1.5b,Qwen/Qwen2.5-1.5B-Instruct,transformers,fast,1.5B,32k,~90+ t/s,~4 GB,Highly capable text generation and knowledge retrieval.
+qwen2.5-coder-1.5b,Qwen/Qwen2.5-Coder-1.5B-Instruct,transformers,fast,1.5B,32k,~90+ t/s,~4 GB,Quick code autocomplete and simple refactoring.
+deepseek-1.5b,deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B,transformers,fast,1.5B,32k,~90+ t/s,~4 GB,A fantastic middle ground of speed and distilled logic.
+qwen2.5-math-1.5b,Qwen/Qwen2.5-Math-1.5B-Instruct,transformers,fast,1.5B,4k,~90+ t/s,~4 GB,Solving arithmetic and structured numerical tables.
+granite-3-2b,ibm-granite/granite-3.0-2b-instruct,transformers,fast,2B,4k,~80+ t/s,~5 GB,Enterprise-grade strict adherence and JSON output.
+gemma2-2b,google/gemma-2-2b-it,transformers,fast,2.6B,8k,~75+ t/s,~6 GB,Google's dense architecture for logic puzzles.
+starcoder2-3b,bigcode/starcoder2-3b,transformers,fast,3B,16k,~60+ t/s,~6.5 GB,The fastest specialized coding and autocomplete model.
+llama3.2-3b,meta-llama/Llama-3.2-3B-Instruct,transformers,fast,3B,128k,~60+ t/s,~6.5 GB,The smartest model while staying above 50 tokens/sec.
+stablelm-3b,stabilityai/stablelm-zephyr-3b,transformers,fast,3B,4k,~60+ t/s,~6.5 GB,Snappy text generation and intermediate API bridging.
+qwen2.5-3b,Qwen/Qwen2.5-3B-Instruct,transformers,fast,3B,32k,~60+ t/s,~6.5 GB,Strong multilingual support and balanced speed.
+qwen2.5-coder-3b,Qwen/Qwen2.5-Coder-3B-Instruct,transformers,fast,3B,32k,~60+ t/s,~6.5 GB,Mid-tier autonomous coding and backend logic.
+qwen2.5-vl-3b,Qwen/Qwen2.5-VL-3B-Instruct,transformers,fast,3B,32k,~50+ t/s,~7 GB,"Fast image processing, OCR, and visual parsing."
+qwen2.5-omni-3b,Qwen/Qwen2.5-Omni-3B,transformers,fast,3B,32k,~50+ t/s,~7 GB,Fast any-to-any multimodal reasoning (audio/text/image).
+phi3.5-mini,microsoft/Phi-3.5-mini-instruct,transformers,fast,3.8B,128k,~50+ t/s,~8 GB,Logic-heavy tasks within constrained memory spaces.
+phi4-mini,microsoft/Phi-4-mini-instruct,transformers,fast,3.8B,128k,~50+ t/s,~8 GB,Microsoft's latest reasoning-dense logic model.
+minicpm3-4b,openbmb/MiniCPM3-4B,transformers,fast,4B,32k,~50+ t/s,~8 GB,Processing of technical logs and backend routing logic.
+phi4-multimodal,microsoft/Phi-4-multimodal-instruct,transformers,fast,~4B,128k,~45+ t/s,~8 GB,Audio and image reasoning in a single pass.
+yi-1.5-6b,01-ai/Yi-1.5-6B-Chat,transformers,balanced,6B,4k,30-35 t/s,~7 GB (8-bit),Dense codebase analysis and document extraction.
+qwen2.5-7b,Qwen/Qwen2.5-7B-Instruct,transformers,balanced,7B,128k,25-30 t/s,~8 GB (8-bit),Robust multilingual support and huge active knowledge.
+qwen2.5-coder-7b,Qwen/Qwen2.5-Coder-7B-Instruct,transformers,balanced,7B,128k,25-30 t/s,~8 GB (8-bit),Autonomous coding tasks and advanced script parsing.
+qwen2.5-math-7b,Qwen/Qwen2.5-Math-7B-Instruct,transformers,balanced,7B,4k,25-30 t/s,~8 GB (8-bit),Parsing complex algorithms and strict logic outputs.
+qwen2.5-vl-7b,Qwen/Qwen2.5-VL-7B-Instruct,transformers,balanced,7B,32k,20-25 t/s,~8.5 GB (8-bit),High-end vision reasoning and UI interface reading.
+deepseek-7b,deepseek-ai/DeepSeek-R1-Distill-Qwen-7B,transformers,balanced,7B,128k,25-30 t/s,~8 GB (8-bit),Strong reasoning distilled from DeepSeek core.
+starcoder2-7b,bigcode/starcoder2-7b,transformers,balanced,7B,16k,25-30 t/s,~8 GB (8-bit),Repository-level context parsing and code generation.
+mistral-v0.3,mistralai/Mistral-7B-Instruct-v0.3,transformers,balanced,7.3B,32k,25-30 t/s,~8 GB (8-bit),Excellent general instruction following.
+mathstral-7b,mistralai/Mathstral-7B-v0.1,transformers,balanced,7.3B,32k,25-30 t/s,~8 GB (8-bit),Specialized mathematical theorems and proofs.
+codegemma-7b,google/codegemma-7b-it,transformers,balanced,7B,8k,25-30 t/s,~8 GB (8-bit),Google's specialized instruction-following code model.
+starling-7b,Nexusflow/Starling-LM-7B-beta,transformers,balanced,7B,8k,25-30 t/s,~8 GB (8-bit),Generating high-quality conversational training datasets.
+olmo-7b,allenai/OLMo-7B-Instruct,transformers,balanced,7B,2k,25-30 t/s,~8 GB (8-bit),Fully transparent architecture for strict benchmarking.
+llama3.1-8b,meta-llama/Llama-3.1-8B-Instruct,transformers,balanced,8B,128k,25-30 t/s,~8.5 GB (8-bit),The industry standard baseline for general instruction.
+deepseek-8b,deepseek-ai/DeepSeek-R1-Distill-Llama-8B,transformers,balanced,8B,128k,25-30 t/s,~8.5 GB (8-bit),Top-tier academic and mathematical reasoning.
+hermes-3-8b,NousResearch/Hermes-3-Llama-3.1-8B,transformers,balanced,8B,128k,25-30 t/s,~8.5 GB (8-bit),"Highly uncensored, deeply agentic roleplay and logic."
+granite-3-8b,ibm-granite/granite-3.0-8b-instruct,transformers,balanced,8B,4k,25-30 t/s,~8.5 GB (8-bit),Strict JSON formatting and enterprise text pipelines.
+aya-expanse-8b,CohereForAI/aya-expanse-8b,transformers,balanced,8B,8k,25-30 t/s,~8.5 GB (8-bit),"Building diverse, highly multilingual instruction datasets."
+minicpm-v-2.6,openbmb/MiniCPM-V-2_6,transformers,balanced,~8B,32k,20-25 t/s,~8.5 GB (8-bit),Incredible vision-language understanding on a budget.
+gemma2-9b,google/gemma-2-9b-it,transformers,balanced,9B,8k,20-25 t/s,~10 GB (8-bit),High-end general text tasks (hits above its weight class).
+yi-1.5-9b,01-ai/Yi-1.5-9B-Chat,transformers,balanced,9B,4k,20-25 t/s,~10 GB (8-bit),Analyzing dense structural API information.
+llama3.2-11b-vl,meta-llama/Llama-3.2-11B-Vision-Instruct,transformers,large,11B,128k,15-20 t/s,~8 GB (4-bit),Meta's flagship vision model. Needs strict 4-bit loading.
+mistral-nemo,mistralai/Mistral-Nemo-Instruct-2407,transformers,large,12B,128k,15-20 t/s,~9 GB (4-bit),Advanced general tasks with a massive context window.
+qwen2.5-14b,Qwen/Qwen2.5-14B-Instruct,transformers,large,14B,128k,15-20 t/s,~10 GB (4-bit),Immense active knowledge and deep logic chains.
+deepseek-14b,deepseek-ai/DeepSeek-R1-Distill-Qwen-14B,transformers,large,14B,128k,15-20 t/s,~10 GB (4-bit),Highly complex logical problems. The T4 ceiling.
+qwen2.5-coder-14b,Qwen/Qwen2.5-Coder-14B-Instruct,transformers,large,14B,128k,15-20 t/s,~10 GB (4-bit),Advanced full-stack application logic and debugging.
+deepseek-coder-lite,deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct,transformers,large,16B,128k,15-20 t/s,~12 GB (4-bit),Efficient Mixture-of-Experts (MoE) coding architecture.
+stable-diffusion-v1-5,runwayml/stable-diffusion-v1-5,diffusers,balanced,1B,N/A,~2-4 s/img,~4.5 GB,Fast and classic text-to-image synthesis.
+flux-schnell,black-forest-labs/FLUX.1-schnell,diffusers,large,12B,N/A,~10-15 s/img,~16 GB,State-of-the-art detail, realism, and prompt adherence.
