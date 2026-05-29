@@ -114,41 +114,29 @@ class HuggingFaceAdapter(BaseAdapter):
         if not messages:
             return messages
             
-        try:
-            if hasattr(self.tokenizer, "apply_chat_template"):
-                full_encoded = self.tokenizer.apply_chat_template(messages, tokenize=True)
-                if len(full_encoded) <= max_tokens:
-                    return messages
-            else:
-                total_est = sum(len(m.get("content", "").split()) * 1.3 for m in messages)
-                if total_est <= max_tokens:
-                    return messages
-        except Exception:
-            pass
-            
+        def estimate_tokens(msgs):
+            total = 0
+            for m in msgs:
+                total += len(m.get("content", "").split()) * 1.3 + 10
+            return total
+
+        # If the whole history fits inside the token budget, return it unmodified
+        if estimate_tokens(messages) <= max_tokens:
+            return messages
+
+        # Otherwise, prune the oldest non-system turns while keeping the system prompt intact
         system_msg = None
         other_msgs = list(messages)
         if other_msgs and other_msgs[0].get("role") == "system":
             system_msg = other_msgs.pop(0)
-            
-        while len(other_msgs) > 1:
+
+        while other_msgs and estimate_tokens([system_msg] + other_msgs if system_msg else other_msgs) > max_tokens:
+            if len(other_msgs) <= 1:
+                # Keep at least the latest user query
+                break
             other_msgs.pop(0)
-            candidate = [system_msg] + other_msgs if system_msg else other_msgs
-            try:
-                if hasattr(self.tokenizer, "apply_chat_template"):
-                    encoded = self.tokenizer.apply_chat_template(candidate, tokenize=True)
-                    if len(encoded) <= max_tokens:
-                        print(f"\033[93m✂️ Context budget exceeded! Pruned oldest message(s) to fit {max_tokens} token window.\033[0m")
-                        return candidate
-                else:
-                    total_est = sum(len(m.get("content", "").split()) * 1.3 for m in candidate)
-                    if total_est <= max_tokens:
-                        print(f"\033[93m✂️ Context budget exceeded! Pruned oldest message(s) to fit {max_tokens} token window.\033[0m")
-                        return candidate
-            except Exception:
-                if len(other_msgs) <= 5:
-                    return [system_msg] + other_msgs if system_msg else other_msgs
-                    
+
+        print(f"\033[93m✂️ Context budget exceeded! Pruned oldest message(s) to fit {max_tokens} token window.\033[0m")
         return [system_msg] + other_msgs if system_msg else other_msgs
 
     def generate(self, input_data: list) -> str:
@@ -259,3 +247,25 @@ class HuggingFaceAdapter(BaseAdapter):
             response = self.generate(input_data)
             for word in response.split():
                 yield word + " "
+
+    def unload(self):
+        import gc
+        import torch
+
+        # Remove model, generator, and tokenizer attributes
+        if hasattr(self, "model"):
+            del self.model
+        if hasattr(self, "tokenizer"):
+            del self.tokenizer
+        if hasattr(self, "generator"):
+            del self.generator
+
+        self.model = None
+        self.tokenizer = None
+        self.generator = None
+
+        # Clean garbage and free PyTorch cache
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()

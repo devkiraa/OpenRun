@@ -442,6 +442,7 @@ async def metrics_summary():
     }
 
 @router.post("/v1/chat/completions", dependencies=[Depends(verify_api_key)])
+@router.post("/v1/chat/completions/chat/completions", dependencies=[Depends(verify_api_key)])
 async def chat_completions(request: ChatRequest):
     # Acquire semaphore to prevent concurrent GPU inference (OOM protection)
     acquired = _inference_semaphore.locked()
@@ -477,6 +478,14 @@ async def _run_chat_completions(request: ChatRequest):
     
     # Extract messages directly
     messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
+    
+    # Log incoming messages for easy developer debugging and diagnostic visibility
+    print(f"\n\033[94m📥 Incoming API Messages (Turns: {len(messages)}):\033[0m")
+    for m in messages:
+        role_color = "\033[93m" if m["role"] == "user" else ("\033[95m" if m["role"] == "system" else "\033[92m")
+        print(f"  {role_color}[{m['role']}]:\033[0m {m['content']}")
+    print()
+
     prompt_tokens = sum(_estimate_tokens(state, m["content"]) for m in messages)
 
     chat_id = request.chat_id

@@ -39,6 +39,14 @@ class InlineAdapter(BaseAdapter):
         for word in response.split():
             yield word + " "
 
+    def unload(self):
+        import gc
+        import torch
+        self.fn = None
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
 def get_free_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(('', 0))
@@ -109,3 +117,14 @@ def serve(fn, public=False, api_key=None, port=None):
             time.sleep(1)
     except KeyboardInterrupt:
         print("🛑 OpenRun stopped")
+    finally:
+        # Clear model and free GPU memory cleanly
+        from openrun.core.state import get_global_state
+        state = get_global_state()
+        if state and state.adapter:
+            try:
+                print("\033[90m🧹 Releasing GPU memory and clearing model resources...\033[0m")
+                state.adapter.unload()
+                print("\033[92m✔ GPU memory successfully cleared and released.\033[0m")
+            except Exception:
+                pass

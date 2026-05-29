@@ -63,3 +63,16 @@ class CustomAdapter(BaseAdapter):
         response = self.generate(input_data)
         for word in response.split():
             yield word + " "
+
+    def unload(self):
+        import gc
+        import torch
+        import sys
+        if "custom_model" in sys.modules:
+            del sys.modules["custom_model"]
+        self.custom_module = None
+        self.target_func = None
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()

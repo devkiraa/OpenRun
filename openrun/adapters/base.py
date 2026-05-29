@@ -7,3 +7,7 @@ class BaseAdapter:
 
     def stream(self, input_data: list):
         raise NotImplementedError
+
+    def unload(self):
+        """Releases the model and garbage-collects GPU VRAM cache cleanly."""
+        pass

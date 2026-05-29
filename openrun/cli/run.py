@@ -159,7 +159,8 @@ def run_predefined(args):
         print(f"Available models: {', '.join(PREDEFINED_MODELS.keys())}")
         return
 
-    print("\n\033[90m[0/3] Loading dependencies and core modules... Please wait.\033[0m")
+    from openrun.utils.graphics import animate_loading_status, draw_live_dashboard
+    animate_loading_status("0/3", "Loading dependencies and core modules", duration=1.0)
     
     # Deferred heavy imports to make the prompt load instantly
     import uvicorn
@@ -229,7 +230,7 @@ def run_predefined(args):
     set_global_state(config=config, model=None)
 
     # Auto fallback
-    print(f"\n\033[90m[1/3] Loading configuration...\033[0m")
+    animate_loading_status("1/3", "Loading configuration parameters", duration=0.8)
     if engine == "transformers":
         try:
             print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
@@ -270,11 +271,9 @@ def run_predefined(args):
     print("\033[92m✔ Model loaded successfully.\033[0m")
 
     if args.run_mode == "chat":
-        print(f"\n\033[90m[3/3] Booting API server on port {args.port} (background)...\033[0m")
+        animate_loading_status("3/3", f"Booting API server on port {args.port}", duration=1.0)
         app = create_app()
-        print(f"\n\033[92m🚀 OpenRun is LIVE!\033[0m")
-        print(f"📡 \033[1mEndpoint:\033[0m http://localhost:{args.port}/v1/chat/completions")
-        print(f"🧪 \033[1mPlayground:\033[0m http://localhost:{args.port}/chat")
+        draw_live_dashboard(args.port, config.api_key)
 
         # Start server in background so local terminal chat can run simultaneously.
         import threading
@@ -323,15 +322,12 @@ def run_predefined(args):
         print("\n\033[93m[INFO] Exiting chat.\033[0m")
         return
 
-    print(f"\n\033[90m[3/3] Booting API server on port {args.port}...\033[0m")
-    time.sleep(1)
+    animate_loading_status("3/3", f"Booting API server on port {args.port}", duration=1.2)
     start_tunnel(config.port)
 
     # Start FastAPI server
     app = create_app()
-    
-    print(f"\n\033[92m🚀 OpenRun is LIVE!\033[0m")
-    print(f"📡 \033[1mEndpoint:\033[0m http://localhost:{args.port}/v1/chat/completions")
+    draw_live_dashboard(args.port, config.api_key)
     
     try:
         import uvicorn
@@ -343,3 +339,14 @@ def run_predefined(args):
             print("\n\033[93m[INFO] Shutting down OpenRun server cleanly...\033[0m")
         else:
             raise
+    finally:
+        # Clear model and free GPU memory cleanly
+        from openrun.core.state import get_global_state
+        state = get_global_state()
+        if state and state.adapter:
+            try:
+                print("\033[90m🧹 Releasing GPU memory and clearing model resources...\033[0m")
+                state.adapter.unload()
+                print("\033[92m✔ GPU memory successfully cleared and released.\033[0m")
+            except Exception as e:
+                print(f"\033[93m⚠️ VRAM cleanup skipped: {e}\033[0m")

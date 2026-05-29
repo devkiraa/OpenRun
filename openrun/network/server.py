@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from openrun.api.routes import router as api_router
 from openrun.core.state import global_state
@@ -14,6 +15,15 @@ logger.addHandler(handler)
 
 def create_app() -> FastAPI:
     app = FastAPI(title="OpenRun API", version=__version__)
+
+    # Enable CORS (Cross-Origin Resource Sharing) for client UIs
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     # Compress all responses ≥500 bytes (60-80% smaller payloads over tunnels)
     app.add_middleware(GZipMiddleware, minimum_size=500)

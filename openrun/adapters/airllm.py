@@ -60,3 +60,14 @@ class AirLLMAdapter(BaseAdapter):
         response = self.generate(input_data)
         for word in response.split():
             yield word + " "
+
+    def unload(self):
+        import gc
+        import torch
+        if hasattr(self, "model"):
+            del self.model
+        self.model = None
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
