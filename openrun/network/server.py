@@ -92,4 +92,44 @@ def create_app() -> FastAPI:
     # Include the OpenAI-compatible routes
     app.include_router(api_router)
     
+    # Custom OpenAPI schema to enable bearer padlock authorization in Swagger UI (/docs)
+    from fastapi.openapi.utils import get_openapi
+
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+        openapi_schema = get_openapi(
+            title="OpenRun API",
+            version=__version__,
+            description="OpenRun - Expose any local AI model as an OpenAI-compatible API.",
+            routes=app.routes,
+        )
+        openapi_schema["components"] = openapi_schema.get("components", {})
+        openapi_schema["components"]["securitySchemes"] = {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "Bearer Token",
+                "description": "Enter your OpenRun API Key (Authorization: Bearer <key>) to authorize requests."
+            }
+        }
+        
+        # Add security requirement to matching endpoints requiring authorization
+        secured_prefixes = [
+            "/v1/chat/completions",
+            "/v1/chats",
+            "/v1/metrics",
+            "/v1/models/load",
+            "/models/load"
+        ]
+        for path, path_item in openapi_schema["paths"].items():
+            if any(path.startswith(prefix) for prefix in secured_prefixes):
+                for method in path_item.values():
+                    method["security"] = [{"bearerAuth": []}]
+                    
+        app.openapi_schema = openapi_schema
+        return openapi_schema
+
+    app.openapi = custom_openapi
+    
     return app
