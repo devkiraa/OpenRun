@@ -455,7 +455,12 @@ PLAYGROUND_HTML = """
             
             <div class="p-4 space-y-4">
                 <div class="space-y-1.5">
-                    <label class="text-sm font-medium text-foreground">Hugging Face Token</label>
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-medium text-foreground">Hugging Face Token</label>
+                        <a href="https://huggingface.co/settings/tokens" target="_blank" class="text-xs text-primary hover:underline flex items-center gap-1">
+                            Get Token <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                        </a>
+                    </div>
                     <input type="password" id="hf-token" placeholder="hf_..." class="w-full bg-background border border-input text-foreground text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring">
                     <p class="text-xs text-muted-foreground">Required for gated models like Llama-3.</p>
                 </div>

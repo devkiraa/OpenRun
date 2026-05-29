@@ -4,6 +4,21 @@ import importlib.metadata
 import os
 import re
 
+# Automatically resolve HF_TOKEN in Google Colab secrets and inject it into os.environ
+if "HF_TOKEN" not in os.environ:
+    try:
+        from google.colab import userdata  # type: ignore
+        token = userdata.get("HF_TOKEN")
+        if token:
+            os.environ["HF_TOKEN"] = token
+            try:
+                from huggingface_hub import login
+                login(token)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
 __version__ = None
 
 # 1. Try to read from pyproject.toml in development workspace

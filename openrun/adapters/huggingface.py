@@ -98,9 +98,6 @@ class HuggingFaceAdapter(BaseAdapter):
                     f"👉 \033[96mHow to get access:\033[0m\n"
                     f"1. Visit the model page: https://huggingface.co/{self.model_name}\n"
                     f"2. Log in to Hugging Face, accept the terms, and click 'Request Access'.\n"
-                    f"3. Create an Access Token: https://huggingface.co/settings/tokens\n"
-                    f"4. Provide the token using the settings in the Web Playground, or log in via CLI:\n"
-                    f"   \033[90mhuggingface-cli login\033[0m or by setting the HF_TOKEN environment variable.\n"
                 )
                 print(msg)
                 raise RuntimeError(f"Gated Repository: Access to {self.model_name} is restricted. Visit https://huggingface.co/{self.model_name} to request access.")
