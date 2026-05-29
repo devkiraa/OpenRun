@@ -14,7 +14,9 @@ dependencies = [
     "transformers",
     "torch",
     "accelerate",
-    "questionary"
+    "questionary",
+    "requests",
+    "huggingface-hub"
 ]
 
 [project.scripts]
