@@ -169,9 +169,7 @@ def run_predefined(args):
     from openrun.core.state import set_global_state, get_global_state
     from openrun.network.server import create_app
     from openrun.network.tunnel import start_tunnel
-    from openrun.adapters.huggingface import HuggingFaceAdapter
-    from openrun.adapters.airllm import AirLLMAdapter
-    from openrun.adapters.ollama import OllamaAdapter
+    from openrun.model.loader import load_model
 
     model_info = PREDEFINED_MODELS[model_key]
     model = model_info["model"]
@@ -226,48 +224,24 @@ def run_predefined(args):
         api_key=args.api_key,
         quantize=getattr(args, "quantize", None),
         low_cpu_mem=getattr(args, "low_cpu_mem", False),
+        engine=getattr(args, "engine", engine or "transformers"),
+        draft_model=getattr(args, "draft_model", None),
     )
     set_global_state(config=config, model=None)
 
     # Auto fallback
     animate_loading_status("1/3", "Loading configuration parameters", duration=0.8)
-    if engine == "transformers":
-        try:
-            print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
-            adapter = HuggingFaceAdapter(model, quantize=config.quantize, low_cpu_mem=config.low_cpu_mem)
-            adapter.load()
-        except RuntimeError as e:
-            if "Gated Repository" in str(e):
-                import sys
-                sys.exit(1)
-            print("\033[93m⚠️ Memory limited! Switching to AirLLM engine...\033[0m")
-            print("\033[93m⏳ Expect slower responses (10-60 seconds)\033[0m")
-            adapter = AirLLMAdapter(model)
-            try:
-                adapter.load()
-            except RuntimeError as ex:
-                if "Gated Repository" in str(ex):
-                    import sys
-                    sys.exit(1)
-                raise
-    elif engine == "ollama":
-        print(f"\033[90m[2/3] Connecting to local Ollama ({model})...\033[0m")
-        adapter = OllamaAdapter(model)
-        adapter.load()
-    else:
-        print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
-        print("\033[93m⏳ Large model detected. Expect slower responses.\033[0m")
-        adapter = AirLLMAdapter(model)
-        try:
-            adapter.load()
-        except RuntimeError as e:
-            if "Gated Repository" in str(e):
-                import sys
-                sys.exit(1)
-            raise
+    
+    print(f"\033[90m[2/3] Initializing {model} into memory...\033[0m")
+    try:
+        load_model(config)
+    except Exception as e:
+        if "Gated Repository" in str(e):
+            sys.exit(1)
+        raise
 
     state = get_global_state()
-    state.adapter = adapter
+    adapter = state.adapter
     print("\033[92m✔ Model loaded successfully.\033[0m")
 
     if args.run_mode == "chat":

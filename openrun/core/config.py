@@ -10,4 +10,6 @@ class Config:
     api_key: Optional[str] = None
     quantize: Optional[str] = None  # "4bit", "8bit", or None
     low_cpu_mem: bool = False
+    engine: str = "transformers"  # "transformers", "vllm", "llamacpp", "ollama"
+    draft_model: Optional[str] = None
 

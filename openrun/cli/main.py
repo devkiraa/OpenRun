@@ -293,6 +293,8 @@ def main():
     serve_parser.add_argument("--api-key", type=str, help="Require API key for requests")
     serve_parser.add_argument("--quantize", type=str, choices=["4bit", "8bit"], default=None, help="Enable quantization (4bit or 8bit) to reduce VRAM usage")
     serve_parser.add_argument("--low-cpu-mem", action="store_true", help="Enable low CPU memory usage (lazy loading with memory mapping)")
+    serve_parser.add_argument("--engine", type=str, choices=["transformers", "vllm", "llamacpp", "ollama"], default="transformers", help="Inference engine to use")
+    serve_parser.add_argument("--draft-model", type=str, help="Small model for speculative decoding (transformers engine only)")
 
 
     # Run command
@@ -303,6 +305,8 @@ def main():
     run_parser.add_argument("--api-key", type=str, help="Require API key for requests")
     run_parser.add_argument("--quantize", type=str, choices=["4bit", "8bit"], default=None, help="Enable quantization (4bit or 8bit) to reduce VRAM usage")
     run_parser.add_argument("--low-cpu-mem", action="store_true", help="Enable low CPU memory usage (lazy loading with memory mapping)")
+    run_parser.add_argument("--engine", type=str, choices=["transformers", "vllm", "llamacpp", "ollama"], default="transformers", help="Inference engine to use")
+    run_parser.add_argument("--draft-model", type=str, help="Small model for speculative decoding (transformers engine only)")
 
 
     # Chat command
@@ -312,6 +316,8 @@ def main():
     chat_parser.add_argument("--no-public", action="store_true", help="Disable Cloudflare public URL")
     chat_parser.add_argument("--quantize", type=str, choices=["4bit", "8bit"], default=None, help="Enable quantization (4bit or 8bit) to reduce VRAM usage")
     chat_parser.add_argument("--low-cpu-mem", action="store_true", help="Enable low CPU memory usage (lazy loading with memory mapping)")
+    chat_parser.add_argument("--engine", type=str, choices=["transformers", "vllm", "llamacpp", "ollama"], default="transformers", help="Inference engine to use")
+    chat_parser.add_argument("--draft-model", type=str, help="Small model for speculative decoding (transformers engine only)")
 
 
     args = parser.parse_args()

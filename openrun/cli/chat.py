@@ -18,6 +18,8 @@ def run_chat(args):
         api_key=args.api_key,
         quantize=getattr(args, "quantize", None),
         low_cpu_mem=getattr(args, "low_cpu_mem", False),
+        engine=getattr(args, "engine", "transformers"),
+        draft_model=getattr(args, "draft_model", None),
     )
     set_global_state(config=config, model=None, adapter=None)
 

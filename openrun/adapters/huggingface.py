@@ -5,11 +5,13 @@ except ImportError:
     raise ImportError("Please install transformers: pip install transformers torch")
 
 class HuggingFaceAdapter(BaseAdapter):
-    def __init__(self, model_name: str, quantize: str = None, low_cpu_mem: bool = False):
+    def __init__(self, model_name: str, quantize: str = None, low_cpu_mem: bool = False, draft_model_name: str = None):
         self.model_name = model_name
         self.quantize = quantize  # "4bit", "8bit", or None
         self.low_cpu_mem = low_cpu_mem
+        self.draft_model_name = draft_model_name
         self.generator = None
+        self.draft_model = None
 
 
     def load(self):
@@ -79,6 +81,19 @@ class HuggingFaceAdapter(BaseAdapter):
                 self.model_name,
                 **model_kwargs,
             )
+
+            # Load draft model for Speculative Decoding if requested
+            if self.draft_model_name:
+                print(f"\033[96m🚀 Loading draft model for Speculative Decoding: {self.draft_model_name}\033[0m")
+                try:
+                    self.draft_model = AutoModelForCausalLM.from_pretrained(
+                        self.draft_model_name,
+                        torch_dtype=model_kwargs.get("torch_dtype", torch.float16),
+                        device_map="auto"
+                    )
+                    print("\033[92m⚡ Speculative Decoding active (Draft model loaded)\033[0m")
+                except Exception as e:
+                    print(f"\033[93m⚠️ Failed to load draft model: {e}. Falling back to standard inference.\033[0m")
 
             # PyTorch 2.0+ JIT compilation for 15-30% sustained speedup
             if hasattr(torch, "compile") and torch.cuda.is_available():
@@ -168,6 +183,9 @@ class HuggingFaceAdapter(BaseAdapter):
             "do_sample": True
         }
 
+        if self.draft_model:
+            generation_kwargs["assistant_model"] = self.draft_model
+
         try:
             outputs = self.model.generate(
                 **inputs,
@@ -217,6 +235,9 @@ class HuggingFaceAdapter(BaseAdapter):
                 "do_sample": True,
                 "streamer": streamer
             }
+
+            if self.draft_model:
+                generation_kwargs["assistant_model"] = self.draft_model
 
             thread = threading.Thread(
                 target=self.model.generate,
