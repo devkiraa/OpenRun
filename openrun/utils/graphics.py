@@ -130,11 +130,21 @@ def draw_live_dashboard(port: int, api_key: str = None):
     val_start = key_padded.find(key_value)
     key_row = key_padded[:val_start] + key_color_code + key_value + reset + key_padded[val_start + len(key_value):]
 
-    # Format the Web Chat row using standard spaces for length calculation, then inject OSC 8
-    chat_plain_str = chat_label + f"[{click_text}]"
-    chat_padded = chat_plain_str.ljust(box_width)
-    val_start = chat_padded.find(f"[{click_text}]")
-    chat_row = chat_padded[:val_start] + link_color + f"[{osc8_link}]" + reset + chat_padded[val_start + len(f"[{click_text}]"):]
+    import os
+    is_notebook = "google.colab" in sys.modules or "COLAB_GPU" in os.environ or "ipykernel" in sys.modules
+
+    # Format the Web Chat row using standard spaces for length calculation, then inject OSC 8 if not in a notebook
+    if is_notebook:
+        chat_value = "See Link Below"
+        chat_plain_str = chat_label + f"[{chat_value}]"
+        chat_padded = chat_plain_str.ljust(box_width)
+        val_start = chat_padded.find(f"[{chat_value}]")
+        chat_row = chat_padded[:val_start] + link_color + f"[{chat_value}]" + reset + chat_padded[val_start + len(f"[{chat_value}]"):]
+    else:
+        chat_plain_str = chat_label + f"[{click_text}]"
+        chat_padded = chat_plain_str.ljust(box_width)
+        val_start = chat_padded.find(f"[{click_text}]")
+        chat_row = chat_padded[:val_start] + link_color + f"[{osc8_link}]" + reset + chat_padded[val_start + len(f"[{click_text}]"):]
 
     # Print dashboard box
     print(f"\n{border}┌────────────────────────────────────────────────────────────┐{reset}")
