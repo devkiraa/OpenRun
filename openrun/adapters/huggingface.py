@@ -82,6 +82,12 @@ class HuggingFaceAdapter(BaseAdapter):
                 **model_kwargs,
             )
 
+            # Ensure pad_token_id is explicitly set to prevent warnings and ensure proper padding
+            if self.tokenizer.pad_token_id is None:
+                self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            if self.model.config.pad_token_id is None:
+                self.model.config.pad_token_id = self.tokenizer.pad_token_id
+
             # Load draft model for Speculative Decoding if requested
             if self.draft_model_name:
                 print(f"\033[96m🚀 Loading draft model for Speculative Decoding: {self.draft_model_name}\033[0m")
@@ -183,6 +189,9 @@ class HuggingFaceAdapter(BaseAdapter):
             "do_sample": True
         }
 
+        if self.tokenizer.pad_token_id is not None:
+            generation_kwargs["pad_token_id"] = self.tokenizer.pad_token_id
+
         if self.draft_model:
             generation_kwargs["assistant_model"] = self.draft_model
 
@@ -235,6 +244,9 @@ class HuggingFaceAdapter(BaseAdapter):
                 "do_sample": True,
                 "streamer": streamer
             }
+
+            if self.tokenizer.pad_token_id is not None:
+                generation_kwargs["pad_token_id"] = self.tokenizer.pad_token_id
 
             if self.draft_model:
                 generation_kwargs["assistant_model"] = self.draft_model
