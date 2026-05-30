@@ -34,14 +34,18 @@ mistral-v0.3,mistralai/Mistral-7B-Instruct-v0.3,transformers,balanced,7.3B,32k,2
 mathstral-7b,mistralai/Mathstral-7B-v0.1,transformers,balanced,7.3B,32k,25-30 t/s,~8 GB (8-bit),Specialized mathematical theorems and proofs.
 codegemma-7b,google/codegemma-7b-it,transformers,balanced,7B,8k,25-30 t/s,~8 GB (8-bit),Google's specialized instruction-following code model.
 starling-7b,Nexusflow/Starling-LM-7B-beta,transformers,balanced,7B,8k,25-30 t/s,~8 GB (8-bit),Generating high-quality conversational training datasets.
-olmo-7b,allenai/OLMo-7B-Instruct,transformers,balanced,7B,2k,25-30 t/s,~8 GB (8-bit),Fully transparent architecture for strict benchmarking.
+olmo-7b,allenai/OLMo-7B-Instruct,transformers,balanced,7B,2k,25-30 t/s,~8.5 GB (8-bit),Fully transparent architecture for strict benchmarking.
+dolphin-2.8-mistral-7b-v02,cognitivecomputations/dolphin-2.8-mistral-7b-v02,transformers,balanced,7B,32k,25-30 t/s,~8 GB (8-bit),"Fast, uncensored and highly reliable variant based on Mistral."
 llama3.1-8b,meta-llama/Llama-3.1-8B-Instruct,transformers,balanced,8B,128k,25-30 t/s,~8.5 GB (8-bit),The industry standard baseline for general instruction.
 deepseek-8b,deepseek-ai/DeepSeek-R1-Distill-Llama-8B,transformers,balanced,8B,128k,25-30 t/s,~8.5 GB (8-bit),Top-tier academic and mathematical reasoning.
 hermes-3-8b,NousResearch/Hermes-3-Llama-3.1-8B,transformers,balanced,8B,128k,25-30 t/s,~8.5 GB (8-bit),"Highly uncensored, deeply agentic roleplay and logic."
+dolphin-2.9-llama3-8b,cognitivecomputations/dolphin-2.9-llama3-8b,transformers,balanced,8B,8k,25-30 t/s,~8.5 GB (8-bit),"Exceptionally smart uncensored model, great at writing scripts."
+llama3.1-8b-abliterated,mlabonne/meta-llama-3.1-8B-Instruct-abliterated,transformers,balanced,8B,128k,25-30 t/s,~8.5 GB (8-bit),"Official Llama 3.1 8B with refusal mechanism removed, preserving original intelligence."
 granite-3-8b,ibm-granite/granite-3.0-8b-instruct,transformers,balanced,8B,4k,25-30 t/s,~8.5 GB (8-bit),Strict JSON formatting and enterprise text pipelines.
 aya-expanse-8b,CohereForAI/aya-expanse-8b,transformers,balanced,8B,8k,25-30 t/s,~8.5 GB (8-bit),"Building diverse, highly multilingual instruction datasets."
 minicpm-v-2.6,openbmb/MiniCPM-V-2_6,transformers,balanced,~8B,32k,20-25 t/s,~8.5 GB (8-bit),Incredible vision-language understanding on a budget.
 gemma2-9b,google/gemma-2-9b-it,transformers,balanced,9B,8k,20-25 t/s,~10 GB (8-bit),High-end general text tasks (hits above its weight class).
+gemma2-9b-abliterated-gguf,bartowski/gemma-2-9b-it-abliterated-GGUF,llamacpp,balanced,9B,8k,20-25 t/s,~6.5 GB (4-bit),"Punches above its weight in logic and coding, abliterated for complex technical teardowns."
 yi-1.5-9b,01-ai/Yi-1.5-9B-Chat,transformers,balanced,9B,4k,20-25 t/s,~10 GB (8-bit),Analyzing dense structural API information.
 llama3.2-11b-vl,meta-llama/Llama-3.2-11B-Vision-Instruct,transformers,large,11B,128k,15-20 t/s,~8 GB (4-bit),Meta's flagship vision model. Needs strict 4-bit loading.
 mistral-nemo,mistralai/Mistral-Nemo-Instruct-2407,transformers,large,12B,128k,15-20 t/s,~9 GB (4-bit),Advanced general tasks with a massive context window.

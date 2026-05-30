@@ -63,6 +63,10 @@ PREDEFINED_MODELS = {
     "aya-expanse-8b": {'model': 'CohereForAI/aya-expanse-8b', 'engine': 'transformers', 'type': 'balanced', 'size': '8B', 'context': '8k', 'speed': '25-30 t/s', 'vram': '~8.5 GB (8-bit)', 'best_for': 'Building diverse, highly multilingual instruction datasets.'},
     "minicpm-v-2.6": {'model': 'openbmb/MiniCPM-V-2_6', 'engine': 'transformers', 'type': 'balanced', 'size': '~8B', 'context': '32k', 'speed': '20-25 t/s', 'vram': '~8.5 GB (8-bit)', 'best_for': 'Incredible vision-language understanding on a budget.'},
     "yi-1.5-9b": {'model': '01-ai/Yi-1.5-9B-Chat', 'engine': 'transformers', 'type': 'balanced', 'size': '9B', 'context': '4k', 'speed': '20-25 t/s', 'vram': '~10 GB (8-bit)', 'best_for': 'Analyzing dense structural API information.'},
+    "dolphin-2.8-mistral-7b-v02": {'model': 'cognitivecomputations/dolphin-2.8-mistral-7b-v02', 'engine': 'transformers', 'type': 'balanced', 'size': '7B', 'context': '32k', 'speed': '25-30 t/s', 'vram': '~8 GB (8-bit)', 'best_for': 'Fast, uncensored and highly reliable variant based on Mistral.'},
+    "dolphin-2.9-llama3-8b": {'model': 'cognitivecomputations/dolphin-2.9-llama3-8b', 'engine': 'transformers', 'type': 'balanced', 'size': '8B', 'context': '8k', 'speed': '25-30 t/s', 'vram': '~8.5 GB (8-bit)', 'best_for': 'Exceptionally smart uncensored model, great at writing scripts.'},
+    "llama3.1-8b-abliterated": {'model': 'mlabonne/meta-llama-3.1-8B-Instruct-abliterated', 'engine': 'transformers', 'type': 'balanced', 'size': '8B', 'context': '128k', 'speed': '25-30 t/s', 'vram': '~8.5 GB (8-bit)', 'best_for': 'Official Llama 3.1 8B with refusal mechanism removed, preserving original intelligence.'},
+    "gemma2-9b-abliterated-gguf": {'model': 'bartowski/gemma-2-9b-it-abliterated-GGUF', 'engine': 'llamacpp', 'type': 'balanced', 'size': '9B', 'context': '8k', 'speed': '20-25 t/s', 'vram': '~6.5 GB (4-bit)', 'best_for': 'Punches above its weight in logic and coding, abliterated for complex technical teardowns.'},
 
     # --- Backward-Compatibility Aliases ---
     "qwen": {
