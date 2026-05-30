@@ -38,7 +38,10 @@ def _monitor_tunnel(process):
     url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
     found = False
     
-    for line in process.stdout:
+    while True:
+        line = process.stdout.readline()
+        if not line:
+            break
         match = url_pattern.search(line)
         if match and not found:
             url = match.group(0)

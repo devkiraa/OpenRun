@@ -60,7 +60,8 @@ def get_cache_dir(interactive=True):
     
     if interactive and not settings.get("configured", False):
         import sys
-        if sys.stdout.isatty():
+        is_notebook = "google.colab" in sys.modules or "COLAB_GPU" in os.environ or "ipykernel" in sys.modules
+        if sys.stdout.isatty() and sys.stdin.isatty() and not is_notebook:
             # Dynamically import questionary to avoid import overhead if not needed
             try:
                 import questionary

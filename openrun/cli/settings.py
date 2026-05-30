@@ -30,7 +30,8 @@ def run_settings_menu():
 
     print("\n\033[1;93m⚙️  OpenRun Configuration Settings Manager\033[0m")
     
-    is_interactive = sys.stdout.isatty()
+    is_notebook = "google.colab" in sys.modules or "COLAB_GPU" in os.environ or "ipykernel" in sys.modules
+    is_interactive = sys.stdout.isatty() and sys.stdin.isatty() and not is_notebook
     
     if is_interactive:
         try:
