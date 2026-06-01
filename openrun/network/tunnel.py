@@ -65,8 +65,6 @@ def _monitor_tunnel(process):
             params = f"?url={quote(api_base_url)}&theme=dark"
             if model_name:
                 params += f"&model={quote(model_name)}"
-            if api_key:
-                params += f"&key={quote(api_key)}"
             share_url = base_chat_domain + params
             
             # OSC 8 Clickable Link
