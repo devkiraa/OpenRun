@@ -120,7 +120,7 @@ def run_settings_menu():
                                 hf_token_str = "\"*****\""
                         save_settings(settings)
                         print(f"\033[92m✔ Hugging Face Token updated to: {hf_token_str}\033[0m\n")
-        except Exception as e:
+        except Exception:
             # Fallback to plain print on errors
             is_interactive = False
             
