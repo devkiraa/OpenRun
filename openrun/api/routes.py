@@ -260,11 +260,10 @@ async def list_models(request: Request):
     from urllib.parse import quote
 
     data = []
+    base_chat_domain = "https://openrun-web.vercel.app/"
+    base_params = f"{base_chat_domain}?url={quote(api_base_url)}&theme=dark"
     for key, info in PREDEFINED_MODELS.items():
-        base_chat_domain = "https://openrun-web.vercel.app/"
-        params = f"?url={quote(api_base_url)}&theme=dark"
-        params += f"&model={quote(key)}"
-        share_url = base_chat_domain + params
+        share_url = f"{base_params}&model={quote(key)}"
 
         data.append({
             "id": key,
@@ -314,11 +313,10 @@ async def model_catalog(request: Request):
     from urllib.parse import quote
     
     data = []
+    base_chat_domain = "https://openrun-web.vercel.app/"
+    base_params = f"{base_chat_domain}?url={quote(api_base_url)}&theme=dark"
     for key, info in PREDEFINED_MODELS.items():
-        base_chat_domain = "https://openrun-web.vercel.app/"
-        params = f"?url={quote(api_base_url)}&theme=dark"
-        params += f"&model={quote(key)}"
-        share_url = base_chat_domain + params
+        share_url = f"{base_params}&model={quote(key)}"
 
         data.append({
             "id": key,
