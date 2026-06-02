@@ -132,7 +132,7 @@ def animate_banner(banner_text):
         sys.stdout.flush()
         
         # Trigger the glorious Retro CRT TV Shutdown & Snap Open Animation!
-        max_len = max(len(l) for l in lines)
+        max_len = max(len(line) for line in lines)
         for step in range(7):
             shutdown_screen = []
             shutdown_screen.append("\033[K") # leading newline (cleared)
@@ -270,14 +270,14 @@ def main():
     model_parser = subparsers.add_parser("model", help="List all available predefined models")
     
     # Master command
-    master_parser = subparsers.add_parser("master", help="Analyze system hardware to recommend models and estimate performance")
+    subparsers.add_parser("master", help="Analyze system hardware to recommend models and estimate performance")
     
     # Clean command
     clean_parser = subparsers.add_parser("clean", help="Clean the folder where downloaded model weights are saved")
     clean_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt and clear immediately")
 
     # Settings command
-    settings_parser = subparsers.add_parser("settings", help="Manage OpenRun configuration settings")
+    subparsers.add_parser("settings", help="Manage OpenRun configuration settings")
 
     for p in [models_parser, model_parser]:
         p.add_argument("query", type=str, nargs="?", help="Search query or task type (e.g. image, text, deepseek)")
@@ -357,7 +357,7 @@ def main():
         settings = get_settings()
         cache_dir = settings.get("cache_dir")
         
-        print(f"\n\033[1;93m🧹 Clean OpenRun Model Cache Storage\033[0m")
+        print("\n\033[1;93m🧹 Clean OpenRun Model Cache Storage\033[0m")
         print(f"Target Directory: \033[96m{cache_dir}\033[0m")
         
         if not os.path.exists(cache_dir) or not os.listdir(cache_dir):
