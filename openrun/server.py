@@ -4,8 +4,8 @@ import uvicorn
 import secrets
 import time
 import socket
-import string
-from openrun.core.state import set_global_state, get_global_state
+
+from openrun.core.state import set_global_state
 from openrun.core.config import Config
 from openrun.network.server import create_app
 from openrun.network.tunnel import start_tunnel
@@ -20,7 +20,7 @@ class InlineAdapter(BaseAdapter):
             sig = inspect.signature(fn)
             if "messages" in sig.parameters:
                 self.func_type = "messages"
-        except:
+        except Exception:
             if getattr(fn, "__name__", "") == "chat":
                 self.func_type = "messages"
 
