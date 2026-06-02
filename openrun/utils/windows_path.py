@@ -1,5 +1,4 @@
 import os
-import sys
 import sysconfig
 
 def check_and_add_windows_path():
