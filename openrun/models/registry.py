@@ -163,16 +163,6 @@ PREDEFINED_MODELS = {
         "vram": "~8 GB",
         "best_for": "General instruction following via Ollama"
     },
-    "gemma2-2b": {
-        "model": "gemma2:2b",
-        "engine": "ollama",
-        "type": "ollama",
-        "size": "2.6B",
-        "context": "8k",
-        "speed": "~75+ t/s",
-        "vram": "~3 GB",
-        "best_for": "Google's dense architectures. Exceptional at instruction following and logic puzzles for their size."
-    },
     "gemma2:2b": {
         "model": "gemma2:2b",
         "engine": "ollama",
