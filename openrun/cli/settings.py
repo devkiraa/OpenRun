@@ -120,13 +120,13 @@ def run_settings_menu():
                                 hf_token_str = "\"*****\""
                         save_settings(settings)
                         print(f"\033[92m✔ Hugging Face Token updated to: {hf_token_str}\033[0m\n")
-        except Exception as e:
+        except Exception:
             # Fallback to plain print on errors
             is_interactive = False
             
     if not is_interactive:
         # Non-interactive / other way (simple console list / read)
-        print(f"\033[90m[INFO] Non-interactive stream detected. Showing active parameters:\033[0m")
+        print("\033[90m[INFO] Non-interactive stream detected. Showing active parameters:\033[0m")
         print(f"  • \033[1mModel Cache Directory:\033[0m {cache_dir}")
         print(f"  • \033[1mDefault Server Port:\033[0m   {default_port}")
         print(f"  • \033[1mDefault API Key:\033[0m       {default_api_key_str}")
