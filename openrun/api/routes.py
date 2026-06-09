@@ -257,18 +257,13 @@ async def list_models(request: Request):
     # Dynamically build base API URL and fetch configured API key (if any)
     base_url_str = str(request.base_url).rstrip("/")
     api_base_url = f"{base_url_str}/v1"
-    api_key = state.config.api_key if state.config else None
-    
     from urllib.parse import quote
 
     data = []
+    base_chat_domain = "https://openrun-web.vercel.app/"
+    base_params = f"{base_chat_domain}?url={quote(api_base_url)}&theme=dark"
     for key, info in PREDEFINED_MODELS.items():
-        base_chat_domain = "https://openrun-web.vercel.app/"
-        params = f"?url={quote(api_base_url)}&theme=dark"
-        params += f"&model={quote(key)}"
-        if api_key:
-            params += f"&key={quote(api_key)}"
-        share_url = base_chat_domain + params
+        share_url = f"{base_params}&model={quote(key)}"
 
         data.append({
             "id": key,
@@ -313,22 +308,15 @@ async def model_catalog(request: Request):
         load_dynamic_models()
     except Exception:
         pass
-    
-    state = get_global_state()
     base_url_str = str(request.base_url).rstrip("/")
     api_base_url = f"{base_url_str}/v1"
-    api_key = state.config.api_key if state.config else None
-    
     from urllib.parse import quote
     
     data = []
+    base_chat_domain = "https://openrun-web.vercel.app/"
+    base_params = f"{base_chat_domain}?url={quote(api_base_url)}&theme=dark"
     for key, info in PREDEFINED_MODELS.items():
-        base_chat_domain = "https://openrun-web.vercel.app/"
-        params = f"?url={quote(api_base_url)}&theme=dark"
-        params += f"&model={quote(key)}"
-        if api_key:
-            params += f"&key={quote(api_key)}"
-        share_url = base_chat_domain + params
+        share_url = f"{base_params}&model={quote(key)}"
 
         data.append({
             "id": key,
