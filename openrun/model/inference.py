@@ -24,10 +24,16 @@ def _normalize_chunk(raw_chunk):
     if raw_chunk is None:
         return ""
     if isinstance(raw_chunk, bytes):
-        return raw_chunk.decode("utf-8", errors="ignore")
-    if isinstance(raw_chunk, str):
-        return raw_chunk
-    return str(raw_chunk)
+        part = raw_chunk.decode("utf-8", errors="ignore")
+    elif isinstance(raw_chunk, str):
+        part = raw_chunk
+    else:
+        part = str(raw_chunk)
+    
+    # Standardize SentencePiece and BPE raw space character representations
+    # (e.g. U+2581 ' ', U+0120 'Ġ', '▁', etc.) to standard spaces.
+    part = part.replace("\u2581", " ").replace("Ġ", " ").replace("▁", " ").replace(" ", " ")
+    return part
 
 
 def _coalesce_chunks(raw_iterable, min_emit_chars: int = 3, max_buffer_chars: int = 64):
@@ -77,6 +83,7 @@ def stream_response(messages: list, model_name: str = "openrun", on_complete=Non
     finish_reason = "stop"
     started_at = time.time()
     full_text = ""
+    generator_exited = False
 
     try:
         # Initial role chunk
@@ -87,13 +94,17 @@ def stream_response(messages: list, model_name: str = "openrun", on_complete=Non
             full_text += chunk
             yield _sse_chunk(chunk_id, created, model_name, delta={"content": chunk})
 
-    except (asyncio.CancelledError, GeneratorExit):
+    except GeneratorExit:
+        generator_exited = True
+        finish_reason = "cancelled"
+    except asyncio.CancelledError:
         finish_reason = "cancelled"
     except KeyboardInterrupt:
         finish_reason = "cancelled"
     except Exception as e:
         finish_reason = "error"
-        yield f"data: {json.dumps({'error': {'message': str(e), 'type': 'stream_error'}}, ensure_ascii=False)}\n\n"
+        if not generator_exited:
+            yield f"data: {json.dumps({'error': {'message': str(e), 'type': 'stream_error'}}, ensure_ascii=False)}\n\n"
     finally:
         if on_complete:
             try:
@@ -101,8 +112,12 @@ def stream_response(messages: list, model_name: str = "openrun", on_complete=Non
             except Exception:
                 pass
         # Send an explicit finish reason for clients that read terminal event chunks.
-        yield _sse_chunk(chunk_id, created, model_name, finish_reason=finish_reason)
-        yield "data: [DONE]\n\n"
+        if not generator_exited:
+            try:
+                yield _sse_chunk(chunk_id, created, model_name, finish_reason=finish_reason)
+                yield "data: [DONE]\n\n"
+            except GeneratorExit:
+                pass
 
 def generate_response(messages: list) -> str:
     state = get_global_state()

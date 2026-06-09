@@ -18,9 +18,43 @@ class HuggingFaceAdapter(BaseAdapter):
         from transformers import AutoModelForCausalLM, AutoTokenizer
         import torch
         import warnings
+        import os
+        import sys
+        from huggingface_hub import login
         
         # Suppress verbose warnings related to torch_dtype payload
         warnings.filterwarnings(action='ignore', category=UserWarning)
+
+        # Resolve Hugging Face token automatically across multiple sources
+        token = os.getenv("HF_TOKEN")
+        
+        # 1. Check Google Colab secrets if in a notebook
+        is_notebook = "google.colab" in sys.modules or "COLAB_GPU" in os.environ or "ipykernel" in sys.modules
+        if not token and is_notebook:
+            try:
+                from google.colab import userdata
+                token = userdata.get("HF_TOKEN")
+                if token:
+                    print("\033[92m✔ Found HF_TOKEN in Colab secrets.\033[0m")
+            except Exception:
+                token = None
+
+        # 2. Check OpenRun local configuration settings
+        if not token:
+            try:
+                from openrun.core.settings import get_settings
+                settings = get_settings()
+                token = settings.get("hf_token")
+                if token:
+                    print("\033[92m✔ Using HF_TOKEN from OpenRun settings.\033[0m")
+            except Exception:
+                token = None
+
+        if token:
+            try:
+                login(token)
+            except Exception as e:
+                print(f"\033[93m⚠️ Failed to log in to Hugging Face with resolved token: {e}\033[0m")
 
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)

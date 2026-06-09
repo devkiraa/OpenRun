@@ -31,9 +31,19 @@ PREDEFINED_MODELS = {
     "qwen2.5-coder-14b": {'model': 'Qwen/Qwen2.5-Coder-14B-Instruct', 'engine': 'transformers', 'type': 'large', 'size': '14B', 'context': '128k', 'speed': '15-20 t/s', 'vram': '~10 GB (4-bit)', 'best_for': 'Advanced full-stack application logic and debugging.'},
 
     # --- Gemma Series ---
+    "gemma-4-e2b": {'model': 'google/gemma-4-E2B', 'engine': 'transformers', 'type': 'ultra-fast', 'size': '2B', 'context': '8k', 'speed': '~100+ t/s', 'vram': '~2.5 GB', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Base edge model optimized for local mobile execution."},
+    "gemma-4-e2b-it": {'model': 'google/gemma-4-E2B-it', 'engine': 'transformers', 'type': 'ultra-fast', 'size': '2B', 'context': '8k', 'speed': '~100+ t/s', 'vram': '~2.5 GB', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Google's flagship ultra-lightweight edge model with native audio and vision."},
+    "gemma-4-e2b-it-qat": {'model': 'google/gemma-4-E2B-it-qat-mobile-transformers', 'engine': 'transformers', 'type': 'ultra-fast', 'size': '2B', 'context': '8k', 'speed': '~100+ t/s', 'vram': '~2.5 GB', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Mobile Optimized QAT variant for direct on-device text/audio/vision tasks."},
+    "gemma-4-e4b": {'model': 'google/gemma-4-E4B', 'engine': 'transformers', 'type': 'fast', 'size': '4B', 'context': '8k', 'speed': '~60+ t/s', 'vram': '~4.5 GB', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Base edge-optimized model for high-end phones and laptops."},
+    "gemma-4-e4b-it": {'model': 'google/gemma-4-E4B-it', 'engine': 'transformers', 'type': 'fast', 'size': '4B', 'context': '8k', 'speed': '~60+ t/s', 'vram': '~4.5 GB', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Edge-optimized model for high-end phones and laptops with native audio/vision."},
+    "gemma-4-12b": {'model': 'google/gemma-4-12B', 'engine': 'transformers', 'type': 'large', 'size': '12B', 'context': '8k', 'speed': '~20+ t/s', 'vram': '~8 GB (4-bit)', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Base unified multimodal encoder-free model."},
+    "gemma-4-12b-it": {'model': 'google/gemma-4-12B-it', 'engine': 'transformers', 'type': 'large', 'size': '12B', 'context': '8k', 'speed': '~20+ t/s', 'vram': '~8 GB (4-bit)', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Unified multimodal encoder-free model, the workstation sweet-spot."},
+    "gemma-4-26b-a4b": {'model': 'google/gemma-4-26B-A4B', 'engine': 'transformers', 'type': 'large', 'size': '26B', 'context': '8k', 'speed': '~15+ t/s', 'vram': '~16 GB (4-bit)', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Highly efficient Mixture-of-Experts (MoE) variant with 3.8B active parameters."},
+    "gemma-4-31b": {'model': 'google/gemma-4-31B', 'engine': 'transformers', 'type': 'massive', 'size': '31B', 'context': '8k', 'speed': '~10+ t/s', 'vram': '~20 GB (4-bit)', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Flagship dense base model tailored for consumer GPUs."},
+    "gemma-4-31b-it": {'model': 'google/gemma-4-31B-it', 'engine': 'transformers', 'type': 'massive', 'size': '31B', 'context': '8k', 'speed': '~10+ t/s', 'vram': '~20 GB (4-bit)', 'provider': 'Google', 'family': 'Gemma 4', 'best_for': "Flagship dense model maximizing reasoning, long-context, and planning."},
     "gemma2-2b": {'model': 'google/gemma-2-2b-it', 'engine': 'transformers', 'type': 'fast', 'size': '2.6B', 'context': '8k', 'speed': '~75+ t/s', 'vram': '~6 GB', 'best_for': "Google's dense architecture for logic puzzles."},
-    "codegemma-7b": {'model': 'google/codegemma-7b-it', 'engine': 'transformers', 'type': 'balanced', 'size': '7B', 'context': '8k', 'speed': '25-30 t/s', 'vram': '~8 GB (8-bit)', 'best_for': "Google's specialized instruction-following code model."},
     "gemma2-9b": {'model': 'google/gemma-2-9b-it', 'engine': 'transformers', 'type': 'balanced', 'size': '9B', 'context': '8k', 'speed': '20-25 t/s', 'vram': '~10 GB (8-bit)', 'best_for': 'High-end general text tasks (hits above its weight class).'},
+    "codegemma-7b": {'model': 'google/codegemma-7b-it', 'engine': 'transformers', 'type': 'balanced', 'size': '7B', 'context': '8k', 'speed': '25-30 t/s', 'vram': '~8 GB (8-bit)', 'best_for': "Google's specialized instruction-following code model."},
 
     # --- Phi Series ---
     "phi3.5-mini": {'model': 'microsoft/Phi-3.5-mini-instruct', 'engine': 'transformers', 'type': 'fast', 'size': '3.8B', 'context': '128k', 'speed': '~50+ t/s', 'vram': '~8 GB', 'best_for': 'Logic-heavy tasks within constrained memory spaces.'},
@@ -388,6 +398,8 @@ def load_dynamic_models():
                 "context": _get_val(["context", "Context"]),
                 "speed": _get_val(["speed", "Speed"]),
                 "vram": _get_val(["vram", "VRAM"]),
+                "provider": _get_val(["provider", "Provider"], "Other"),
+                "family": _get_val(["family", "Family"], "Other"),
                 "best_for": _get_val(["best_for", "best_used_for", "Best Used For / Capabilities"])
             }
             if model_info["model"]:
@@ -404,7 +416,127 @@ def load_dynamic_models():
     finally:
         spinner.stop(success)
 
-# Ensure all static models have a default task of 'text' if not specified
-for info in PREDEFINED_MODELS.values():
+# Ensure all static models have default task, provider, and family attributes if not specified
+for key, info in PREDEFINED_MODELS.items():
     if "task" not in info:
         info["task"] = "text"
+        
+    # Infer provider if not specified
+    if "provider" not in info:
+        model_path = info.get("model", "").lower()
+        key_lower = key.lower()
+        if "deepseek" in key_lower or "deepseek" in model_path:
+            info["provider"] = "DeepSeek"
+        elif "llama" in key_lower or "meta" in model_path:
+            if "abliterated" in key_lower or "abliterated" in model_path:
+                info["provider"] = "Meta (Abliterated)"
+            else:
+                info["provider"] = "Meta"
+        elif "qwen" in key_lower or "qwen" in model_path:
+            info["provider"] = "Alibaba"
+        elif "gemma" in key_lower or "google" in model_path:
+            if "abliterated" in key_lower or "abliterated" in model_path:
+                info["provider"] = "Google (Abliterated)"
+            else:
+                info["provider"] = "Google"
+        elif "phi" in key_lower or "microsoft" in model_path:
+            info["provider"] = "Microsoft"
+        elif "mistral" in key_lower or "mathstral" in key_lower or "mistral" in model_path:
+            info["provider"] = "Mistral"
+        elif "smollm" in key_lower or "huggingface" in model_path:
+            info["provider"] = "Hugging Face"
+        elif "granite" in key_lower or "ibm" in model_path:
+            info["provider"] = "IBM"
+        elif "starcoder" in key_lower or "bigcode" in model_path:
+            info["provider"] = "BigCode"
+        elif "yi" in key_lower or "01-ai" in model_path:
+            info["provider"] = "01.AI"
+        elif "hermes" in key_lower or "nousresearch" in model_path:
+            info["provider"] = "Nous Research"
+        elif "aya" in key_lower or "cohere" in model_path:
+            info["provider"] = "Cohere"
+        elif "minicpm" in key_lower or "openbmb" in model_path:
+            info["provider"] = "OpenBMB"
+        elif "starling" in key_lower or "nexusflow" in model_path:
+            info["provider"] = "Nexusflow"
+        elif "stable-diffusion" in key_lower or "stability" in model_path:
+            info["provider"] = "Stability AI"
+        elif "flux" in key_lower or "black-forest-labs" in model_path:
+            info["provider"] = "Black Forest Labs"
+        elif "dolphin" in key_lower or "cognitivecomputations" in model_path:
+            info["provider"] = "Cognitive Computations"
+        elif "olmo" in key_lower or "allenai" in model_path:
+            info["provider"] = "AllenAI"
+        else:
+            info["provider"] = "Other"
+
+    # Infer family if not specified
+    if "family" not in info:
+        model_path = info.get("model", "").lower()
+        key_lower = key.lower()
+        if "deepseek-r1" in model_path or "distill" in model_path:
+            info["family"] = "DeepSeek R1"
+        elif "deepseek-coder" in key_lower or "deepseek-coder" in model_path:
+            info["family"] = "DeepSeek Coder"
+        elif "llama-3.2" in model_path or "llama3.2" in key_lower:
+            info["family"] = "Llama 3.2"
+        elif "llama-3.1" in model_path or "llama3.1" in key_lower:
+            info["family"] = "Llama 3.1"
+        elif "llama-3" in model_path or "llama3" in key_lower:
+            info["family"] = "Llama 3"
+        elif "qwen2.5-coder" in key_lower or "qwen2.5-coder" in model_path:
+            info["family"] = "Qwen 2.5 Coder"
+        elif "qwen2.5-math" in key_lower or "qwen2.5-math" in model_path:
+            info["family"] = "Qwen 2.5 Math"
+        elif "qwen2.5-vl" in key_lower or "qwen2.5-vl" in model_path:
+            info["family"] = "Qwen 2.5 VL"
+        elif "qwen2.5-omni" in key_lower or "qwen2.5-omni" in model_path:
+            info["family"] = "Qwen 2.5 Omni"
+        elif "qwen2.5" in key_lower or "qwen2.5" in model_path:
+            info["family"] = "Qwen 2.5"
+        elif "gemma-4" in key_lower or "gemma-4" in model_path:
+            info["family"] = "Gemma 4"
+        elif "gemma-2" in model_path or "gemma2" in key_lower:
+            info["family"] = "Gemma 2"
+        elif "codegemma" in key_lower or "codegemma" in model_path:
+            info["family"] = "CodeGemma"
+        elif "gemma" in key_lower or "gemma" in model_path:
+            info["family"] = "Gemma"
+        elif "phi-3.5" in model_path or "phi3.5" in key_lower:
+            info["family"] = "Phi 3.5"
+        elif "phi-4" in model_path or "phi4" in key_lower:
+            info["family"] = "Phi 4"
+        elif "phi-3" in model_path or "phi" in key_lower:
+            info["family"] = "Phi 3"
+        elif "mistral-nemo" in key_lower or "mistral-nemo" in model_path:
+            info["family"] = "Mistral Nemo"
+        elif "mistral" in key_lower or "mistral" in model_path:
+            info["family"] = "Mistral"
+        elif "mathstral" in key_lower or "mathstral" in model_path:
+            info["family"] = "Mathstral"
+        elif "smollm2" in key_lower or "smollm2" in model_path:
+            info["family"] = "SmolLM2"
+        elif "granite-3.0" in model_path or "granite" in key_lower:
+            info["family"] = "Granite 3"
+        elif "starcoder2" in key_lower or "starcoder2" in model_path:
+            info["family"] = "StarCoder 2"
+        elif "yi-1.5" in model_path or "yi" in key_lower:
+            info["family"] = "Yi 1.5"
+        elif "hermes" in key_lower or "hermes" in model_path:
+            info["family"] = "Hermes"
+        elif "aya" in key_lower or "aya" in model_path:
+            info["family"] = "Aya"
+        elif "minicpm" in key_lower or "minicpm" in model_path:
+            info["family"] = "MiniCPM"
+        elif "starling" in key_lower or "starling" in model_path:
+            info["family"] = "Starling"
+        elif "stable-diffusion" in key_lower or "stable-diffusion" in model_path:
+            info["family"] = "Stable Diffusion"
+        elif "flux" in key_lower or "flux" in model_path:
+            info["family"] = "Flux"
+        elif "dolphin" in key_lower or "dolphin" in model_path:
+            info["family"] = "Dolphin"
+        elif "olmo" in key_lower or "olmo" in model_path:
+            info["family"] = "OLMo"
+        else:
+            info["family"] = "Other"
