@@ -208,11 +208,11 @@ class HuggingFaceAdapter(BaseAdapter):
         input_data = self._prune_history(input_data)
 
         prompt = None
-        if hasattr(self.tokenizer, "apply_chat_template") and getattr(self.tokenizer, "chat_template", None) is not None:
-            try:
+        try:
+            if hasattr(self.tokenizer, "apply_chat_template") and getattr(self.tokenizer, "chat_template", None) is not None:
                 prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
-            except Exception:
-                prompt = None
+        except Exception:
+            prompt = None
 
         if prompt is None:
             prompt = ""
@@ -299,11 +299,11 @@ class HuggingFaceAdapter(BaseAdapter):
             input_data = self._prune_history(input_data)
 
             prompt = None
-            if hasattr(self.tokenizer, "apply_chat_template") and getattr(self.tokenizer, "chat_template", None) is not None:
-                try:
+            try:
+                if hasattr(self.tokenizer, "apply_chat_template") and getattr(self.tokenizer, "chat_template", None) is not None:
                     prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
-                except Exception:
-                    prompt = None
+            except Exception:
+                prompt = None
 
             if prompt is None:
                 prompt = ""
