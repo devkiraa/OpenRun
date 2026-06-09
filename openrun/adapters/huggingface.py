@@ -117,10 +117,16 @@ class HuggingFaceAdapter(BaseAdapter):
             )
 
             # Ensure pad_token_id is explicitly set to prevent warnings and ensure proper padding
-            if self.tokenizer.pad_token_id is None:
-                self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
-            if self.model.config.pad_token_id is None:
-                self.model.config.pad_token_id = self.tokenizer.pad_token_id
+            try:
+                if self.tokenizer.pad_token_id is None:
+                    self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            except Exception:
+                pass
+            try:
+                if getattr(self.model.config, "pad_token_id", None) is None:
+                    setattr(self.model.config, "pad_token_id", self.tokenizer.pad_token_id)
+            except Exception:
+                pass
 
             # Load draft model for Speculative Decoding if requested
             if self.draft_model_name:

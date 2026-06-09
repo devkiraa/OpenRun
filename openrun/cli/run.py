@@ -211,6 +211,13 @@ def run_predefined(args):
         else:
             if is_colab_runtime:
                 print("\033[90m[INFO] No saved HF_TOKEN found in Colab secrets.\033[0m")
+                print("\033[93m💡 Tip: Google Colab shell commands (prefixed with '!') run in a separate process\033[0m")
+                print("\033[93m   and cannot access your notebook's secrets directly.\033[0m")
+                print("\033[90m   To fix this, please run this in a Python cell first to link your token:\033[0m")
+                print("      \033[94mimport openrun\033[0m")
+                print("\033[90m   Or set it in your environment before running shell commands:\033[0m")
+                print("      \033[94mimport os; from google.colab import userdata; os.environ['HF_TOKEN'] = userdata.get('HF_TOKEN')\033[0m")
+                print("      \033[94m!openrun run <model>\033[0m\n")
             import getpass
             token = getpass.getpass("\033[93m🔐\033[0m Enter HuggingFace token: ")
             if token:

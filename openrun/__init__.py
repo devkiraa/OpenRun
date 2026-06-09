@@ -24,6 +24,25 @@ if "HF_TOKEN" not in os.environ:
         token = userdata.get("HF_TOKEN")
         if token:
             os.environ["HF_TOKEN"] = token
+            # Persist to settings.json so subprocesses (e.g. !openrun) can access it
+            try:
+                settings_file = os.path.expanduser("~/.openrun/settings.json")
+                settings_dir = os.path.dirname(settings_file)
+                os.makedirs(settings_dir, exist_ok=True)
+                
+                settings = {}
+                if os.path.exists(settings_file):
+                    import json
+                    with open(settings_file, "r") as f:
+                        settings = json.load(f)
+                
+                if settings.get("hf_token") != token:
+                    settings["hf_token"] = token
+                    settings["configured"] = True
+                    with open(settings_file, "w") as f:
+                        json.dump(settings, f, indent=4)
+            except Exception:
+                pass
             try:
                 from huggingface_hub import login
                 login(token)
