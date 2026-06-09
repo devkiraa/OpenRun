@@ -38,21 +38,25 @@ class VLLMAdapter(BaseAdapter):
         prompt += "<|assistant|>\n"
         return prompt
 
-    def generate(self, input_data: list) -> str:
+    def generate(self, input_data: list, stop=None) -> str:
         from vllm import SamplingParams
         
-        sampling_params = SamplingParams(temperature=0.7, top_p=0.9, max_tokens=200)
+        stop_seqs = None
+        if stop:
+            stop_seqs = [stop] if isinstance(stop, str) else list(stop)
+            
+        sampling_params = SamplingParams(temperature=0.7, top_p=0.9, max_tokens=200, stop=stop_seqs)
         prompt = self._convert_to_prompt(input_data)
         
         outputs = self.llm.generate([prompt], sampling_params)
         return outputs[0].outputs[0].text
 
-    def stream(self, input_data: list):
+    def stream(self, input_data: list, stop=None):
         # The standard LLM.generate in vLLM is not streaming-friendly for simple scripts.
         # However, we can simulate it or encourage the use of vLLM's OpenAI server.
         # For the sake of this adapter, we will return the full response in chunks
         # since offline LLM.generate doesn't yield tokens one by one.
-        response = self.generate(input_data)
+        response = self.generate(input_data, stop=stop)
         # To make it 'feel' like streaming even if the backend is offline:
         for word in response.split():
             yield word + " "

@@ -30,24 +30,24 @@ class LlamaCppAdapter(BaseAdapter):
         )
         print("\033[92m✔ GGUF Model loaded successfully.\033[0m")
 
-    def generate(self, input_data: list) -> str:
+    def generate(self, input_data: list, stop=None) -> str:
         if not self.model:
             raise RuntimeError("Model not loaded.")
             
-        response = self.model.create_chat_completion(
-            messages=input_data,
-            stream=False
-        )
+        kwargs = {"messages": input_data, "stream": False}
+        if stop:
+            kwargs["stop"] = stop
+        response = self.model.create_chat_completion(**kwargs)
         return response["choices"][0]["message"]["content"]
 
-    def stream(self, input_data: list):
+    def stream(self, input_data: list, stop=None):
         if not self.model:
             raise RuntimeError("Model not loaded.")
             
-        stream = self.model.create_chat_completion(
-            messages=input_data,
-            stream=True
-        )
+        kwargs = {"messages": input_data, "stream": True}
+        if stop:
+            kwargs["stop"] = stop
+        stream = self.model.create_chat_completion(**kwargs)
         for chunk in stream:
             delta = chunk["choices"][0].get("delta", {})
             if "content" in delta:

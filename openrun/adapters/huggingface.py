@@ -200,25 +200,29 @@ class HuggingFaceAdapter(BaseAdapter):
         print(f"\033[93m✂️ Context budget exceeded! Pruned oldest message(s) to fit {max_tokens} token window.\033[0m")
         return [system_msg] + other_msgs if system_msg else other_msgs
 
-    def generate(self, input_data: list) -> str:
+    def generate(self, input_data: list, stop=None) -> str:
         if not hasattr(self, "model") or not hasattr(self, "tokenizer"):
             raise RuntimeError("Model not loaded. Call load() first.")
         
         # Prune conversation history dynamically to fit token budget and protect memory
         input_data = self._prune_history(input_data)
 
-        if hasattr(self.tokenizer, "apply_chat_template"):
-            prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
-            inputs = self.tokenizer(prompt, return_tensors="pt")
-            prompt_length = inputs["input_ids"].shape[1]
-        else:
+        prompt = None
+        if hasattr(self.tokenizer, "apply_chat_template") and getattr(self.tokenizer, "chat_template", None) is not None:
+            try:
+                prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
+            except Exception:
+                prompt = None
+
+        if prompt is None:
             prompt = ""
             if input_data:
                 for msg in input_data:
                     prompt += f"<|{msg['role']}|>\n{msg['content']}\n"
             prompt += "<|assistant|>\n"
-            inputs = self.tokenizer(prompt, return_tensors="pt")
-            prompt_length = inputs["input_ids"].shape[1]
+
+        inputs = self.tokenizer(prompt, return_tensors="pt")
+        prompt_length = inputs["input_ids"].shape[1]
         
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
@@ -235,6 +239,28 @@ class HuggingFaceAdapter(BaseAdapter):
         if self.draft_model:
             generation_kwargs["assistant_model"] = self.draft_model
 
+        if stop:
+            from transformers import StoppingCriteria, StoppingCriteriaList
+            stop_seqs = [stop] if isinstance(stop, str) else list(stop)
+
+            class StopCheckCriteria(StoppingCriteria):
+                def __init__(self, stop_sequences, tokenizer, prompt_length):
+                    self.stop_sequences = [s.lower() for s in stop_sequences]
+                    self.tokenizer = tokenizer
+                    self.prompt_length = prompt_length
+
+                def __call__(self, input_ids, scores, **kwargs):
+                    generated_tokens = input_ids[0][self.prompt_length:]
+                    generated_text = self.tokenizer.decode(generated_tokens, skip_special_tokens=True).lower()
+                    for stop_seq in self.stop_sequences:
+                        if generated_text.endswith(stop_seq):
+                            return True
+                    return False
+
+            generation_kwargs["stopping_criteria"] = StoppingCriteriaList([
+                StopCheckCriteria(stop_seqs, self.tokenizer, prompt_length)
+            ])
+
         try:
             outputs = self.model.generate(
                 **inputs,
@@ -245,6 +271,13 @@ class HuggingFaceAdapter(BaseAdapter):
             outputs = outputs[0][prompt_length:]
             generated = self.tokenizer.decode(outputs, skip_special_tokens=True)
             
+            if stop:
+                stop_seqs = [stop] if isinstance(stop, str) else list(stop)
+                for stop_seq in stop_seqs:
+                    if generated.lower().endswith(stop_seq.lower()):
+                        generated = generated[:-len(stop_seq)]
+                        break
+
             return generated.strip()
         except RuntimeError as e:
             if "TORCH_LIBRARY" in str(e) or "triton" in str(e).lower():
@@ -256,17 +289,23 @@ class HuggingFaceAdapter(BaseAdapter):
             else:
                 raise
 
-    def stream(self, input_data: list):
+    def stream(self, input_data: list, stop=None):
         try:
             from transformers import TextIteratorStreamer
+            from transformers import StoppingCriteria, StoppingCriteriaList
             import threading
 
             # Prune conversation history dynamically to fit token budget and protect memory
             input_data = self._prune_history(input_data)
 
-            if hasattr(self.tokenizer, "apply_chat_template"):
-                prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
-            else:
+            prompt = None
+            if hasattr(self.tokenizer, "apply_chat_template") and getattr(self.tokenizer, "chat_template", None) is not None:
+                try:
+                    prompt = self.tokenizer.apply_chat_template(input_data, tokenize=False, add_generation_prompt=True)
+                except Exception:
+                    prompt = None
+
+            if prompt is None:
                 prompt = ""
                 for msg in input_data:
                     prompt += f"<|{msg['role']}|>\n{msg['content']}\n"
@@ -275,14 +314,41 @@ class HuggingFaceAdapter(BaseAdapter):
             streamer = TextIteratorStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
 
             inputs = self.tokenizer(prompt, return_tensors="pt")
+            prompt_length = inputs["input_ids"].shape[1]
             inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+            stop_flag = [False]
+            stop_seqs = []
+            if stop:
+                stop_seqs = [stop] if isinstance(stop, str) else list(stop)
+
+            class StopCheckCriteria(StoppingCriteria):
+                def __init__(self, stop_flag, stop_sequences, tokenizer, prompt_length):
+                    self.stop_flag = stop_flag
+                    self.stop_sequences = [s.lower() for s in stop_sequences]
+                    self.tokenizer = tokenizer
+                    self.prompt_length = prompt_length
+
+                def __call__(self, input_ids, scores, **kwargs):
+                    if self.stop_flag[0]:
+                        return True
+                    if self.stop_sequences and self.tokenizer:
+                        generated_tokens = input_ids[0][self.prompt_length:]
+                        generated_text = self.tokenizer.decode(generated_tokens, skip_special_tokens=True).lower()
+                        for stop_seq in self.stop_sequences:
+                            if generated_text.endswith(stop_seq):
+                                return True
+                    return False
 
             generation_kwargs = {
                 "max_new_tokens": 200,
                 "temperature": 0.7,
                 "top_p": 0.9,
                 "do_sample": True,
-                "streamer": streamer
+                "streamer": streamer,
+                "stopping_criteria": StoppingCriteriaList([
+                    StopCheckCriteria(stop_flag, stop_seqs, self.tokenizer, prompt_length)
+                ])
             }
 
             if self.tokenizer.pad_token_id is not None:
@@ -301,8 +367,15 @@ class HuggingFaceAdapter(BaseAdapter):
             thread.daemon = True
             thread.start()
 
-            for token in streamer:
-                yield token
+            try:
+                for token in streamer:
+                    yield token
+            except GeneratorExit:
+                stop_flag[0] = True
+                raise
+            except Exception:
+                stop_flag[0] = True
+                raise
 
         except RuntimeError as e:
             if "TORCH_LIBRARY" in str(e) or "triton" in str(e).lower():
@@ -317,7 +390,7 @@ class HuggingFaceAdapter(BaseAdapter):
             print(f"⚠️ Streaming failed, falling back: {e}")
 
             # fallback to safe generation
-            response = self.generate(input_data)
+            response = self.generate(input_data, stop=stop)
             for word in response.split():
                 yield word + " "
 

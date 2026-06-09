@@ -2,10 +2,10 @@ class BaseAdapter:
     def load(self):
         pass
 
-    def generate(self, input_data: list) -> str:
+    def generate(self, input_data: list, stop=None) -> str:
         pass
 
-    def stream(self, input_data: list):
+    def stream(self, input_data: list, stop=None):
         raise NotImplementedError
 
     def unload(self):

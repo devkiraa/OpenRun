@@ -543,7 +543,7 @@ async def _run_chat_completions(request: ChatRequest):
             _persist_chat_and_metrics(response_text, True, elapsed, finish_reason)
 
         return StreamingResponse(
-            stream_response(messages, model_name=model_name, on_complete=_on_stream_complete),
+            stream_response(messages, model_name=model_name, stop=request.stop, on_complete=_on_stream_complete),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
@@ -554,7 +554,7 @@ async def _run_chat_completions(request: ChatRequest):
 
     # Call inference layer
     started_at = time.time()
-    response_text = generate_response(messages)
+    response_text = generate_response(messages, stop=request.stop)
     completion_tokens = _estimate_tokens(state, response_text)
     metric = _persist_chat_and_metrics(response_text, False, time.time() - started_at)
         

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union
 
 class Message(BaseModel):
     role: str
@@ -10,3 +10,4 @@ class ChatRequest(BaseModel):
     messages: List[Message]
     stream: Optional[bool] = False
     chat_id: Optional[str] = None
+    stop: Optional[Union[str, List[str]]] = None

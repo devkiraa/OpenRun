@@ -52,12 +52,19 @@ class AirLLMAdapter(BaseAdapter):
             else:
                 raise
 
-    def generate(self, input_data):
+    def generate(self, input_data, stop=None):
         prompt = input_data[-1]["content"]
-        return self.model.generate(prompt)
+        response = self.model.generate(prompt)
+        if stop:
+            stop_seqs = [stop] if isinstance(stop, str) else list(stop)
+            for stop_seq in stop_seqs:
+                if response.lower().endswith(stop_seq.lower()):
+                    response = response[:-len(stop_seq)]
+                    break
+        return response
 
-    def stream(self, input_data: list):
-        response = self.generate(input_data)
+    def stream(self, input_data: list, stop=None):
+        response = self.generate(input_data, stop=stop)
         for word in response.split():
             yield word + " "
 

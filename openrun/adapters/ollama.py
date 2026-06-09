@@ -42,7 +42,7 @@ class OllamaAdapter(BaseAdapter):
         # OpenRun standard array of {"role": x, "content": y} translates perfectly to Ollama Chat
         return input_data
 
-    def generate(self, input_data: list) -> str:
+    def generate(self, input_data: list, stop=None) -> str:
         messages = self._convert_messages(input_data)
         
         payload = {
@@ -50,13 +50,15 @@ class OllamaAdapter(BaseAdapter):
             "messages": messages,
             "stream": False
         }
+        if stop:
+            payload["options"] = {"stop": [stop] if isinstance(stop, str) else list(stop)}
         
         res = requests.post("http://127.0.0.1:11434/api/chat", json=payload)
         res.raise_for_status()
         data = res.json()
         return data.get("message", {}).get("content", "")
 
-    def stream(self, input_data: list):
+    def stream(self, input_data: list, stop=None):
         messages = self._convert_messages(input_data)
         
         payload = {
@@ -64,6 +66,8 @@ class OllamaAdapter(BaseAdapter):
             "messages": messages,
             "stream": True
         }
+        if stop:
+            payload["options"] = {"stop": [stop] if isinstance(stop, str) else list(stop)}
         
         with requests.post("http://127.0.0.1:11434/api/chat", json=payload, stream=True) as res:
             res.raise_for_status()

@@ -70,7 +70,7 @@ def _coalesce_chunks(raw_iterable, min_emit_chars: int = 3, max_buffer_chars: in
         yield buffer
 
 
-def stream_response(messages: list, model_name: str = "openrun", on_complete=None):
+def stream_response(messages: list, model_name: str = "openrun", stop=None, on_complete=None):
     state = get_global_state()
 
     if not hasattr(state, "adapter") or not state.adapter:
@@ -90,7 +90,7 @@ def stream_response(messages: list, model_name: str = "openrun", on_complete=Non
         yield _sse_chunk(chunk_id, created, model_name, delta={"role": "assistant"})
 
         # Content chunks with coalescing for smoother UI updates.
-        for chunk in _coalesce_chunks(state.adapter.stream(messages)):
+        for chunk in _coalesce_chunks(state.adapter.stream(messages, stop=stop)):
             full_text += chunk
             yield _sse_chunk(chunk_id, created, model_name, delta={"content": chunk})
 
@@ -119,13 +119,13 @@ def stream_response(messages: list, model_name: str = "openrun", on_complete=Non
             except GeneratorExit:
                 pass
 
-def generate_response(messages: list) -> str:
+def generate_response(messages: list, stop=None) -> str:
     state = get_global_state()
     
     if not hasattr(state, "adapter") or not state.adapter:
         return "Warning: No model loaded. Please provide --model or --file."
     
     try:
-        return state.adapter.generate(messages)
+        return state.adapter.generate(messages, stop=stop)
     except Exception as e:
         return f"Error: Model generation failed - {str(e)}"

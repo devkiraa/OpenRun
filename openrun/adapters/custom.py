@@ -49,18 +49,26 @@ class CustomAdapter(BaseAdapter):
 
         print(f"🧠 Using function: {self.target_func.__name__}()")
 
-    def generate(self, input_data: list) -> str:
+    def generate(self, input_data: list, stop=None) -> str:
         if not self.target_func:
             raise RuntimeError("Custom model not loaded. Call load() first.")
         
         if self.func_type == "messages":
-            return self.target_func(input_data)
+            response = self.target_func(input_data)
         else:
             prompt = input_data[-1]["content"] if input_data else ""
-            return self.target_func(prompt)
+            response = self.target_func(prompt)
+            
+        if stop:
+            stop_seqs = [stop] if isinstance(stop, str) else list(stop)
+            for stop_seq in stop_seqs:
+                if response.lower().endswith(stop_seq.lower()):
+                    response = response[:-len(stop_seq)]
+                    break
+        return response
 
-    def stream(self, input_data: list):
-        response = self.generate(input_data)
+    def stream(self, input_data: list, stop=None):
+        response = self.generate(input_data, stop=stop)
         for word in response.split():
             yield word + " "
 
