@@ -124,6 +124,38 @@ def _monitor_tunnel(process):
                 val_start = chat_padded.find(f"[{click_text}]")
                 chat_row = chat_padded[:val_start] + link_color + f"[{osc8_link}]" + reset + chat_padded[val_start + len(f"[{click_text}]"):]
 
+            # Verify the tunnel is active and DNS is resolved before presenting the URL
+            import urllib.request
+            import urllib.error
+            import time
+            import socket
+            
+            print(f"⏳ Verifying tunnel connection and DNS propagation for {url}...")
+            
+            verified = False
+            for attempt in range(30):
+                try:
+                    req = urllib.request.Request(
+                        url, 
+                        headers={'User-Agent': 'OpenRun-Tunnel-Verifier/1.0'}
+                    )
+                    with urllib.request.urlopen(req, timeout=2) as response:
+                        _ = response.read()
+                    verified = True
+                    break
+                except urllib.error.HTTPError:
+                    verified = True
+                    break
+                except (urllib.error.URLError, socket.timeout, ConnectionResetError, ConnectionRefusedError, OSError):
+                    time.sleep(1)
+                except Exception:
+                    time.sleep(1)
+
+            if verified:
+                print("✅ Tunnel verified successfully. It is now fully active.")
+            else:
+                print("⚠️ Tunnel URL printed, but verification timed out. It may take a moment to resolve.")
+
             # Draw green box
             print(f"\n{border}┌" + "─"*box_width + f"┐{reset}")
             print(f"{border}│{reset}{header}{title_row}{reset}{border}│{reset}")
