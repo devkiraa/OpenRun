@@ -194,7 +194,6 @@ def run_predefined(args):
         # In Colab, prefer a saved secret before prompting.
         if not token:
             try:
-                import google.colab
                 from google.colab import userdata
                 is_colab_runtime = True
                 try:
