@@ -20,7 +20,7 @@ class InlineAdapter(BaseAdapter):
             sig = inspect.signature(fn)
             if "messages" in sig.parameters:
                 self.func_type = "messages"
-        except:
+        except Exception:
             if getattr(fn, "__name__", "") == "chat":
                 self.func_type = "messages"
 
