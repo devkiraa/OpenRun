@@ -13,7 +13,7 @@ def run_predefined(args):
     if not args.model_name:
         is_colab = False
         try:
-            import google.colab
+            import google.colab  # noqa: F401
             is_colab = True
         except ImportError:
             pass
@@ -194,7 +194,6 @@ def run_predefined(args):
         # In Colab, prefer a saved secret before prompting.
         if not token:
             try:
-                import google.colab
                 from google.colab import userdata
                 is_colab_runtime = True
                 try:
