@@ -277,7 +277,7 @@ def main():
     clean_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt and clear immediately")
 
     # Settings command
-    settings_parser = subparsers.add_parser("settings", help="Manage OpenRun configuration settings")
+    subparsers.add_parser("settings", help="Manage OpenRun configuration settings")
 
     for p in [models_parser, model_parser]:
         p.add_argument("query", type=str, nargs="?", help="Search query or task type (e.g. image, text, deepseek)")
